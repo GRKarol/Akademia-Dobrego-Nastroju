@@ -8,7 +8,6 @@ import MusicPlayer from './components/MusicPlayer';
 import CustomCursor from './components/CustomCursor';
 import ClubRoom from './components/ClubRoom';
 import EventsView from './components/EventsView';
-import Concierge from './components/Concierge';
 
 type ViewState = 'landing' | 'choice' | 'story' | 'contact' | 'club' | 'events';
 
@@ -47,7 +46,6 @@ const App: React.FC = () => {
     <div className="relative bg-[#F5F5F5] min-h-screen selection:bg-[#D4AF37] selection:text-white overflow-x-hidden">
       <CustomCursor />
       <MusicPlayer isVisible={view !== 'story' || currentSlideType === 'image'} />
-      <Concierge />
 
       <AnimatePresence mode="wait">
         {view === 'landing' && (
