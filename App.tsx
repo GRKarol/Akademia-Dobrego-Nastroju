@@ -90,19 +90,25 @@ const App: React.FC = () => {
         )}
 
         {view === 'contact' && (
-          <motion.div key="view-contact" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <section className="min-h-screen bg-[#F1E9D2] text-[#121212] flex flex-col items-center">
-              <ContactInvitation onBack={() => setView('choice')} onJoinClub={handleJoinClub} onGoToEvents={handleGoToEvents} />
-              <footer className="w-full bg-[#EADDCA] text-[#2C1810] py-32 px-6 flex flex-col items-center justify-center text-center">
-                <h4 className="font-serif text-3xl md:text-6xl text-[#8B4513]">Akademia Dobrego Nastroju</h4>
-                <p className="font-serif italic text-[#966F33] text-xl opacity-80 mt-4 text-center">Tu, gdzie dobry nastrój ma swój dom.</p>
-              </footer>
-            </section>
+          <motion.div 
+            key="view-contact" 
+            initial={{ opacity: 0, scale: 0.95, filter: 'blur(10px)' }} 
+            animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }} 
+            exit={{ opacity: 0, scale: 1.1, filter: 'blur(20px)' }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <ContactInvitation onBack={() => setView('choice')} onJoinClub={handleJoinClub} onGoToEvents={handleGoToEvents} />
           </motion.div>
         )}
 
         {view === 'events' && (
-           <motion.div key="view-events" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+           <motion.div 
+            key="view-events" 
+            initial={{ opacity: 0, scale: 0.9, filter: 'blur(20px)' }} 
+            animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }} 
+            exit={{ opacity: 0, scale: 1.1, filter: 'blur(20px)' }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+           >
              <EventsView onBack={() => setView('choice')} />
            </motion.div>
         )}

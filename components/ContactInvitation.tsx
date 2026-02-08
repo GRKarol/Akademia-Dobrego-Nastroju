@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Phone, Mail, ArrowLeft, Loader2, ExternalLink, MapPin, Facebook, ArrowRight, Sparkles } from 'lucide-react';
@@ -21,14 +20,14 @@ const ContactInvitation: React.FC<ContactInvitationProps> = ({ onBack, onJoinClu
   const [error, setError] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
 
-  // Auto-scroll transition logic
+  // Auto-scroll transition logic with improved threshold
   useEffect(() => {
     const handleScroll = () => {
       const scrollPosition = window.innerHeight + window.scrollY;
       const scrollHeight = document.documentElement.scrollHeight;
       
-      // If we're within 10px of the bottom, trigger events
-      if (scrollHeight - scrollPosition < 10 && onGoToEvents) {
+      // Trigger transition only when user firmly scrolls at the very bottom
+      if (scrollHeight - scrollPosition < 5 && onGoToEvents) {
         onGoToEvents();
       }
     };
@@ -62,7 +61,7 @@ const ContactInvitation: React.FC<ContactInvitationProps> = ({ onBack, onJoinClu
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#F1E9D2] text-[#121212] selection:bg-[#966F33] selection:text-white pb-0 overflow-x-hidden">
+    <div className="w-full min-h-screen bg-[#F1E9D2] text-[#121212] selection:bg-[#966F33] selection:text-white pb-[40vh] overflow-x-hidden">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
         {onBack && (
@@ -188,7 +187,7 @@ const ContactInvitation: React.FC<ContactInvitationProps> = ({ onBack, onJoinClu
           </div>
         </section>
 
-        {/* REORGANIZED: Events Button moved ABOVE Club section */}
+        {/* Events Button Area */}
         <section className="max-w-4xl mx-auto pt-12 mb-20">
            <div className="flex flex-col items-center text-center space-y-10">
               <div className="space-y-4">
@@ -252,16 +251,26 @@ const ContactInvitation: React.FC<ContactInvitationProps> = ({ onBack, onJoinClu
           </div>
         </section>
 
-        {/* Bottom Scroll Indicator */}
-        <div className="mt-20 pb-10 flex flex-col items-center">
-          <div className="flex flex-col items-center space-y-4 text-[#121212]/20">
-            <p className="font-serif italic text-sm md:text-base tracking-[0.4em] uppercase">Przewiń, by przejść do wydarzeń</p>
-            <motion.div 
-              animate={{ y: [0, 10, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="w-px h-16 bg-gradient-to-b from-[#121212]/20 to-transparent" 
-            />
-          </div>
+        {/* Dynamic Transition Indicator */}
+        <div className="mt-40 flex flex-col items-center">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            className="flex flex-col items-center space-y-6 text-[#8B4513]"
+          >
+            <div className="px-6 py-2 border border-[#8B4513]/20 rounded-full">
+              <p className="font-serif italic text-sm tracking-[0.3em] uppercase opacity-40">Przewiń, aby wejść do galerii wydarzeń</p>
+            </div>
+            <div className="relative h-32 w-px overflow-hidden">
+               <motion.div 
+                  animate={{ y: [0, 128] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                  className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-transparent via-[#8B4513] to-transparent"
+               />
+               <div className="h-full w-full bg-[#8B4513]/10" />
+            </div>
+            <Sparkles size={20} className="animate-pulse opacity-30" />
+          </motion.div>
         </div>
       </div>
     </div>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, PanInfo, Variants } from 'framer-motion';
 import { ArrowLeft, Calendar, Clock, MapPin, Sparkles, History, ChevronRight, ChevronLeft } from 'lucide-react';
@@ -25,6 +24,18 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [direction, setDirection] = useState(0);
   
+  // Scroll locking logic during entry animation
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    const timer = setTimeout(() => {
+      document.body.style.overflow = 'auto';
+    }, 700); // Wait for App.tsx transition (0.6s) + small buffer
+    
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, []);
+
   useEffect(() => {
     const q = query(collection(db, "adn_events"), orderBy("order", "asc"));
     const unsub = onSnapshot(q, (snap) => {
@@ -59,8 +70,6 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
     }
   };
 
-  // Fix: Explicitly type variants and use 'as const' for the cubic-bezier arrays to satisfy Framer Motion's Easing types.
-  // This prevents TypeScript from incorrectly inferring [number, number, number, number] as a generic number[].
   const variants: Variants = {
     enter: (direction: number) => ({
       x: direction > 0 ? 300 : -300,
@@ -72,7 +81,7 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
       opacity: 1,
       scale: 1,
       transition: {
-        duration: 0.4,
+        duration: 0.2, // Shorter slide transition
         ease: [0.16, 1, 0.3, 1] as const
       }
     },
@@ -81,7 +90,7 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
       opacity: 0,
       scale: 0.95,
       transition: {
-        duration: 0.4,
+        duration: 0.2, // Shorter slide transition
         ease: [0.16, 1, 0.3, 1] as const
       }
     })
