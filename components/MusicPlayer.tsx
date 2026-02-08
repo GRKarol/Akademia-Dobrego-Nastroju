@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 // ==========================================
 // KONFIGURACJA MUZYKI:
 // Używamy zewnętrznego URL, ponieważ lokalne pliki w sandboxie mogą nie być dostępne.
-const MY_MUSIC_URL = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3'; // Nastrojowy utwór fortepianowy/ambient
+const MY_MUSIC_URL = './public/Hollow Knight OST - The White Lady (Full Version).mp3'; // Nastrojowy utwór fortepianowy/ambient
 // ==========================================
 
 interface MusicPlayerProps {
