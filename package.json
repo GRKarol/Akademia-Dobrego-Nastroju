@@ -1,3 +1,4 @@
+
 {
   "name": "akademia-dobrego-nastroju",
   "private": true,
@@ -14,7 +15,7 @@
     "framer-motion": "^11.11.17",
     "lucide-react": "^0.460.0",
     "firebase": "^11.1.0",
-    "@google/genai": "^0.2.1"
+    "@google/genai": "^0.3.1"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",
