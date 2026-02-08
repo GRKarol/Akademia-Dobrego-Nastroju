@@ -1,0 +1,7 @@
+{
+  "name": "Akademia Dobrego Nastroju",
+  "description": "Cyfrowy azyl dla świadomych dusz. Miejsce, gdzie muzyka, kultura i autentyczność tworzą wspólnotę wolną od pośpiechu świata.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
