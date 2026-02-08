@@ -15,7 +15,7 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ isVisible = true }) => {
   useEffect(() => {
     if (!audioRef.current) {
       // Wybrano inny, często bardziej dostępny utwór z SoundHelix
-      audioRef.current = new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-17.mp3');
+      audioRef.current = new Audio('/Hollow Knight OST - The White Lady (Full Version).mp3');
       audioRef.current.loop = true;
       audioRef.current.volume = 0.15;
     }
