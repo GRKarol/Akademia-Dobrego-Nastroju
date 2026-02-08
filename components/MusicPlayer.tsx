@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // ==========================================
 // KONFIGURACJA MUZYKI:
-// Używamy zewnętrznego URL, ponieważ lokalne pliki w sandboxie mogą nie być dostępne.
-const MY_MUSIC_URL = './public/Hollow Knight OST - The White Lady (Full Version).mp3'; // Nastrojowy utwór fortepianowy/ambient
+// Dla pliku w folderze public, używamy ścieżki bezwzględnej
+const MY_MUSIC_URL = '/muzyka.mp3';
 // ==========================================
 
 interface MusicPlayerProps {
@@ -13,6 +13,7 @@ interface MusicPlayerProps {
 
 const MusicPlayer: React.FC<MusicPlayerProps> = ({ isVisible = true }) => {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const playPromiseRef = useRef<Promise<void> | null>(null);
 
@@ -21,15 +22,36 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ isVisible = true }) => {
       audioRef.current = new Audio(MY_MUSIC_URL);
       audioRef.current.loop = true;
       audioRef.current.volume = 0.2;
+      audioRef.current.preload = 'auto';
       
-      audioRef.current.onerror = () => {
-        console.error("BŁĄD ADN: Nie można załadować zewnętrznego pliku audio.");
+      audioRef.current.oncanplaythrough = () => {
+        console.log("✅ Muzyka załadowana poprawnie!");
+        setIsLoaded(true);
       };
+      
+      audioRef.current.onerror = (e) => {
+        console.error("❌ BŁĄD: Nie można załadować pliku muzyka.mp3", e);
+        console.error("Sprawdź czy plik znajduje się w folderze public/");
+      };
+
+      // Załaduj plik
+      audioRef.current.load();
     }
+
+    // Cleanup
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
   }, []);
 
   const toggle = async () => {
-    if (!audioRef.current) return;
+    if (!audioRef.current || !isLoaded) {
+      console.warn("Muzyka jeszcze się ładuje...");
+      return;
+    }
 
     if (isPlaying) {
       if (playPromiseRef.current !== null) {
@@ -53,7 +75,7 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ isVisible = true }) => {
         await playPromise;
         playPromiseRef.current = null;
       } catch (error) {
-        console.error("Playback failed:", error);
+        console.error("Nie można odtworzyć muzyki:", error);
         setIsPlaying(false);
         playPromiseRef.current = null;
       }
@@ -75,14 +97,15 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ isVisible = true }) => {
               transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
               className="text-[9px] uppercase tracking-[0.5em] text-[#966F33] whitespace-nowrap font-bold"
             >
-              {isPlaying ? "Sesja Dobrego Nastroju • Ambient Piano Journey • " : "Cisza przed podróżą"}
+              {isPlaying ? "Sesja Dobrego Nastroju • Ambient Piano Journey • " : isLoaded ? "Cisza przed podróżą" : "Ładowanie muzyki..."}
             </motion.p>
           </div>
           <motion.button
             onClick={toggle}
-            whileHover={{ scale: 1.1, backgroundColor: '#EADDCA' }}
-            whileTap={{ scale: 0.9 }}
-            className="w-14 h-14 flex items-center justify-center border border-[#966F33]/30 rounded-full text-[#966F33] bg-white/70 backdrop-blur-md shadow-2xl transition-colors"
+            disabled={!isLoaded}
+            whileHover={{ scale: isLoaded ? 1.1 : 1, backgroundColor: isLoaded ? '#EADDCA' : undefined }}
+            whileTap={{ scale: isLoaded ? 0.9 : 1 }}
+            className={`w-14 h-14 flex items-center justify-center border border-[#966F33]/30 rounded-full text-[#966F33] bg-white/70 backdrop-blur-md shadow-2xl transition-colors ${!isLoaded ? 'opacity-50 cursor-wait' : ''}`}
           >
             {isPlaying ? (
               <div className="flex space-x-1 items-end h-4">
