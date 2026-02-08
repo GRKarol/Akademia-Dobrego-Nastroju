@@ -1,12 +1,10 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // ==========================================
 // KONFIGURACJA MUZYKI:
-// Po umieszczeniu pliku w folderze 'public', w kodzie odwołujemy się do niego przez "/"
-const RAW_FILE_NAME = 'Hollow Knight OST - The White Lady (Full Version).mp3';
-const MY_MUSIC_URL = `/${RAW_FILE_NAME}`;
+// Używamy zewnętrznego URL, ponieważ lokalne pliki w sandboxie mogą nie być dostępne.
+const MY_MUSIC_URL = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3'; // Nastrojowy utwór fortepianowy/ambient
 // ==========================================
 
 interface MusicPlayerProps {
@@ -22,10 +20,10 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ isVisible = true }) => {
     if (!audioRef.current) {
       audioRef.current = new Audio(MY_MUSIC_URL);
       audioRef.current.loop = true;
-      audioRef.current.volume = 0.25;
+      audioRef.current.volume = 0.2;
       
       audioRef.current.onerror = () => {
-        console.error(`BŁĄD ADN: Nie można znaleźć pliku "${RAW_FILE_NAME}" w folderze public.`);
+        console.error("BŁĄD ADN: Nie można załadować zewnętrznego pliku audio.");
       };
     }
   }, []);
@@ -77,7 +75,7 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ isVisible = true }) => {
               transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
               className="text-[9px] uppercase tracking-[0.5em] text-[#966F33] whitespace-nowrap font-bold"
             >
-              {isPlaying ? "Hollow Knight OST • The White Lady • Pure Soul Session • " : "Cisza przed podróżą"}
+              {isPlaying ? "Sesja Dobrego Nastroju • Ambient Piano Journey • " : "Cisza przed podróżą"}
             </motion.p>
           </div>
           <motion.button

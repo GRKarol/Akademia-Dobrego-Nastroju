@@ -1,0 +1,18 @@
+=== AKADEMIA DOBREGO NASTROJU - WYMAGANE PLIKI ===
+
+Aby strona wyświetlała się poprawnie, umieść poniższe pliki w folderze 'public' (główny katalog):
+
+1. budynek_zima.mp4  -> (Tło sekcji HERO - zapętlony film z drona w zimowej scenerii)
+2. budynek.jpg       -> (Sekcja Galeria: Wejście / Próg - zdjęcie budynku w nocy)
+3. kawiarnia.jpg     -> (Sekcja Galeria: Kawiarnia - zdjęcie z kawiarni, lampy z nut)
+4. sala.jpg          -> (Sekcja Galeria: Duża sala - zdjęcie z koncertu/widowni)
+5. kameralna.jpg     -> (Sekcja Galeria: Kameralna sala - zdjęcie z białym pianinem)
+6. detal.jpg         -> (Sekcja Galeria: Detal - zdjęcie ekspresu do kawy lub detali drewnianych)
+7. zakamarki.jpg     -> (Sekcja Galeria: Zakamarki - zdjęcie salonu z kanapami i widokiem na las)
+
+Opcjonalnie:
+- budynek_zima.jpg   -> (Zapasowe zdjęcie tła Hero dla przeglądarek mobilnych/oszczędzających dane)
+
+Zalecenia techniczne:
+- Zdjęcia: format JPEG (.jpg), szerokość ok. 1920px.
+- Wideo: format MP4 (kodek H.264), bitrate ok. 5-8 Mbps, bez dźwięku (muted).

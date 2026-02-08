@@ -1,7 +1,6 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, X, Send, Sparkles, Loader2 } from 'lucide-react';
+import { X, Send, Sparkles, Loader2 } from 'lucide-react';
 import { GoogleGenAI } from '@google/genai';
 
 const Concierge: React.FC = () => {
@@ -20,43 +19,35 @@ const Concierge: React.FC = () => {
   }, [messages]);
 
   const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+    const trimmedInput = input.trim();
+    if (!trimmedInput || isLoading) return;
 
-    const userMessage = input.trim();
     setInput('');
-    setMessages(prev => [...prev, { role: 'user', text: userMessage }]);
+    setMessages(prev => [...prev, { role: 'user', text: trimmedInput }]);
     setIsLoading(true);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const chat = ai.chats.create({
         model: 'gemini-3-flash-preview',
         config: {
-          systemInstruction: `
-            Jesteś Cyfrowym Konsjerżem (Kustoszem) "Akademii Dobrego Nastroju". 
-            Twoja osobowość: elegancka, nieco tajemnicza, artystyczna, głęboko szanująca rozmówcę.
-            Mówisz wyłącznie w języku polskim.
-            Twoim celem jest pomóc odwiedzającym zrozumieć duszę tego miejsca:
-            - Akademia to azyl dla świadomych, pracowitych i inteligentnych ludzi, którzy szukają głębi.
-            - Założona przez dwoje muzyków zmęczonych powierzchownością świata.
-            - Miejsce spotkań elit intelektualnych i kulturalnych (jakość nad ilością).
-            - Lokalizacja: Kłobuck, ul. Kręta 23.
-            Zachęcaj do odkrycia historii w sekcji "Geneza" lub sprawdzenia "Wydarzeń". 
-            Jeśli ktoś pyta o kod do "Klubu Nuty", wyjaśnij dyskretnie, że to przestrzeń dla tych, którzy już przekroczyli nasz próg i zostali częścią wspólnoty.
-          `,
+          systemInstruction: 'Jesteś Cyfrowym Konsjerżem (Kustoszem) "Akademii Dobrego Nastroju". Twoja osobowość: elegancka, nieco tajemnicza, artystyczna, głęboko szanująca rozmówcę. Mówisz wyłącznie w języku polskim. Twoim celem jest pomóc odwiedzającym zrozumieć duszę tego miejsca: Akademia to azyl dla świadomych, pracowitych i inteligentnych ludzi, którzy szukają głębi. Lokalizacja: Kłobuck, ul. Kręta 23.',
         },
       });
 
-      const responseStream = await chat.sendMessageStream({ message: userMessage });
+      const responseStream = await chat.sendMessageStream({ message: trimmedInput });
       
-      let assistantText = '';
+      let assistantAccumulatedText = '';
       setMessages(prev => [...prev, { role: 'assistant', text: '' }]);
 
       for await (const chunk of responseStream) {
-        assistantText += chunk.text || '';
+        const chunkText = chunk.text || '';
+        assistantAccumulatedText += chunkText;
         setMessages(prev => {
           const newMsgs = [...prev];
-          newMsgs[newMsgs.length - 1].text = assistantText;
+          if (newMsgs.length > 0) {
+            newMsgs[newMsgs.length - 1] = { ...newMsgs[newMsgs.length - 1], text: assistantAccumulatedText };
+          }
           return newMsgs;
         });
       }
@@ -76,9 +67,8 @@ const Concierge: React.FC = () => {
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="absolute bottom-20 left-0 w-[300px] md:w-[380px] h-[480px] bg-white/90 backdrop-blur-2xl rounded-sm border border-[#966F33]/20 shadow-2xl flex flex-col overflow-hidden"
+            className="absolute bottom-20 left-0 w-[300px] md:w-[380px] h-[480px] bg-white/95 backdrop-blur-2xl rounded-sm border border-[#966F33]/20 shadow-2xl flex flex-col overflow-hidden"
           >
-            {/* Header */}
             <div className="p-5 bg-[#F5F2EB] border-b border-[#966F33]/10 flex justify-between items-center">
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 bg-[#966F33] rounded-full animate-pulse" />
@@ -89,15 +79,12 @@ const Concierge: React.FC = () => {
               </button>
             </div>
 
-            {/* Chat Messages */}
             <div 
               ref={scrollRef}
               className="flex-1 overflow-y-auto p-5 space-y-4 no-scrollbar bg-[#FAF9F6]"
             >
               {messages.map((m, i) => (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
+                <div
                   key={i}
                   className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
@@ -108,7 +95,7 @@ const Concierge: React.FC = () => {
                   }`}>
                     {m.text}
                   </div>
-                </motion.div>
+                </div>
               ))}
               {isLoading && (
                 <div className="flex justify-start">
@@ -119,14 +106,13 @@ const Concierge: React.FC = () => {
               )}
             </div>
 
-            {/* Input Section */}
             <div className="p-4 border-t border-[#966F33]/10 bg-white">
               <div className="flex items-center space-x-2 bg-[#F5F2EB] p-2 rounded-sm border border-transparent focus-within:border-[#966F33]/30 transition-all">
                 <input 
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleSend(); }}
                   placeholder="Zapytaj o duszę Akademii..."
                   className="flex-1 bg-transparent border-none outline-none text-sm text-[#2C1810] px-2 placeholder:text-[#2C1810]/30"
                 />
