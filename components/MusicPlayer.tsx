@@ -4,10 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // ==========================================
 // KONFIGURACJA MUZYKI:
-// Używamy dokładnej nazwy pliku, którą podałeś. 
-// Upewnij się, że plik ma rozszerzenie .mp3 na końcu nazwy w Twoim folderze.
+// Po umieszczeniu pliku w folderze 'public', w kodzie odwołujemy się do niego przez "/"
 const RAW_FILE_NAME = 'Hollow Knight OST - The White Lady (Full Version).mp3';
-const MY_MUSIC_URL = encodeURI(`./${RAW_FILE_NAME}`);
+const MY_MUSIC_URL = `/${RAW_FILE_NAME}`;
 // ==========================================
 
 interface MusicPlayerProps {
@@ -25,13 +24,8 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ isVisible = true }) => {
       audioRef.current.loop = true;
       audioRef.current.volume = 0.25;
       
-      // Dodatkowa obsługa błędów ładowania
       audioRef.current.onerror = () => {
-        console.error(`BŁĄD ADN: Nie można załadować pliku muzycznego: "${RAW_FILE_NAME}". 
-        Upewnij się, że:
-        1. Plik znajduje się w głównym folderze (obok index.html).
-        2. Nazwa pliku jest IDENTYCZNA (wielkość liter, spacje, kropki).
-        3. Plik ma rozszerzenie .mp3`);
+        console.error(`BŁĄD ADN: Nie można znaleźć pliku "${RAW_FILE_NAME}" w folderze public.`);
       };
     }
   }, []);
