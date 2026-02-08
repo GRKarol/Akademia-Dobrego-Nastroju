@@ -12,9 +12,11 @@ const Hero: React.FC = () => {
           loop
           muted
           playsInline
+          preload="auto"
           className="absolute inset-0 w-full h-full object-cover grayscale opacity-[0.25]"
+          src="https://assets.mixkit.co/videos/preview/mixkit-slow-motion-of-a-person-playing-the-piano-in-a-4934-large.mp4"
         >
-          {/* Film z klimatem luksusowego wnętrza/pianina */}
+          {/* Fallback dla starszych przeglądarek */}
           <source src="https://assets.mixkit.co/videos/preview/mixkit-slow-motion-of-a-person-playing-the-piano-in-a-4934-large.mp4" type="video/mp4" />
           Twoja przeglądarka nie wspiera wideo.
         </video>

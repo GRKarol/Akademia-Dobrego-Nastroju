@@ -4,9 +4,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // ==========================================
 // KONFIGURACJA MUZYKI:
-// 1. Upewnij się, że plik z muzyką znajduje się w tym samym folderze co index.html
-// 2. Nazwij go dokładnie: white-lady.mp3
-const MY_MUSIC_URL = './white-lady.mp3'; 
+// Używamy dokładnej nazwy pliku, którą podałeś. 
+// Upewnij się, że plik ma rozszerzenie .mp3 na końcu nazwy w Twoim folderze.
+const RAW_FILE_NAME = 'Hollow Knight OST - The White Lady (Full Version).mp3';
+const MY_MUSIC_URL = encodeURI(`./${RAW_FILE_NAME}`);
 // ==========================================
 
 interface MusicPlayerProps {
@@ -22,7 +23,16 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ isVisible = true }) => {
     if (!audioRef.current) {
       audioRef.current = new Audio(MY_MUSIC_URL);
       audioRef.current.loop = true;
-      audioRef.current.volume = 0.25; // Idealny poziom dla melancholijnego tła
+      audioRef.current.volume = 0.25;
+      
+      // Dodatkowa obsługa błędów ładowania
+      audioRef.current.onerror = () => {
+        console.error(`BŁĄD ADN: Nie można załadować pliku muzycznego: "${RAW_FILE_NAME}". 
+        Upewnij się, że:
+        1. Plik znajduje się w głównym folderze (obok index.html).
+        2. Nazwa pliku jest IDENTYCZNA (wielkość liter, spacje, kropki).
+        3. Plik ma rozszerzenie .mp3`);
+      };
     }
   }, []);
 
@@ -51,7 +61,7 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ isVisible = true }) => {
         await playPromise;
         playPromiseRef.current = null;
       } catch (error) {
-        console.error("Audio playback failed. Sprawdź czy plik white-lady.mp3 istnieje w folderze głównym.", error);
+        console.error("Playback failed:", error);
         setIsPlaying(false);
         playPromiseRef.current = null;
       }
@@ -69,7 +79,7 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ isVisible = true }) => {
         >
           <div className="hidden md:block overflow-hidden text-right">
             <motion.p 
-              animate={isPlaying ? { x: [-200, 300] } : {}}
+              animate={isPlaying ? { x: [-250, 350] } : {}}
               transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
               className="text-[9px] uppercase tracking-[0.5em] text-[#966F33] whitespace-nowrap font-bold"
             >

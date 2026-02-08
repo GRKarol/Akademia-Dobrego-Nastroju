@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence, PanInfo } from 'framer-motion';
+import { motion, AnimatePresence, PanInfo, Variants } from 'framer-motion';
 import { ArrowLeft, Calendar, Clock, MapPin, Sparkles, History, ChevronRight, ChevronLeft } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
@@ -59,7 +59,9 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
     }
   };
 
-  const variants = {
+  // Fix: Explicitly type variants and use 'as const' for the cubic-bezier arrays to satisfy Framer Motion's Easing types.
+  // This prevents TypeScript from incorrectly inferring [number, number, number, number] as a generic number[].
+  const variants: Variants = {
     enter: (direction: number) => ({
       x: direction > 0 ? 300 : -300,
       opacity: 0,
@@ -71,7 +73,7 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
       scale: 1,
       transition: {
         duration: 0.4,
-        ease: [0.16, 1, 0.3, 1]
+        ease: [0.16, 1, 0.3, 1] as const
       }
     },
     exit: (direction: number) => ({
@@ -80,7 +82,7 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
       scale: 0.95,
       transition: {
         duration: 0.4,
-        ease: [0.16, 1, 0.3, 1]
+        ease: [0.16, 1, 0.3, 1] as const
       }
     })
   };
