@@ -5,20 +5,20 @@ import { motion } from 'framer-motion';
 const Hero: React.FC = () => {
   return (
     <div className="relative h-screen w-full flex flex-col items-center justify-start md:justify-center overflow-hidden bg-[#F5F2EB]">
-      {/* Film tła zamiast obrazu */}
+      {/* Klimatyczne Wideo w tle - Grayscale dla elegancji */}
       <div className="absolute inset-x-0 top-0 h-[80vh] z-0 overflow-hidden">
         <video
           autoPlay
           loop
           muted
           playsInline
-          className="absolute inset-0 w-full h-full object-cover grayscale opacity-25"
+          className="absolute inset-0 w-full h-full object-cover grayscale opacity-[0.25]"
         >
-          {/* PODMIEŃ PONIŻSZY URL NA SWÓJ FILM (np. .mp4) */}
+          {/* Film z klimatem luksusowego wnętrza/pianina */}
           <source src="https://assets.mixkit.co/videos/preview/mixkit-slow-motion-of-a-person-playing-the-piano-in-a-4934-large.mp4" type="video/mp4" />
-          Twój przeglądarka nie wspiera formatu wideo.
+          Twoja przeglądarka nie wspiera wideo.
         </video>
-        {/* Subtelniejszy gradient przechodzący w ciepły odcień */}
+        {/* Ciepły gradient łączący wideo z kolorem Champagne tła */}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#F5F2EB]/30 to-[#F5F2EB]" />
       </div>
 
@@ -51,7 +51,7 @@ const Hero: React.FC = () => {
               transition={{ delay: 1.2, duration: 1.5 }}
               className="text-base md:text-2xl font-light tracking-wide leading-relaxed text-[#2C1810]/70 max-w-4xl mx-auto text-center px-4"
             >
-              Stworzony przez ludzi świadomych, dla ludzi światowych. To w tym miejscu spotkasz osoby które wyróżniają się spośród masy swoją kulturą, świadomością otaczającego ich wszechświata, i wiedzą na tematy znacznie wartościowsze niż jutrzejsza pogoda.
+              Stworzony przez ludzi świadomych, dla ludzi światowych. To w tym miejscu spotkasz osoby które wyróżniają się spośród masy swoją kulturą, świadomością i wiedzą.
             </motion.p>
             
             <motion.div 
