@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // ==========================================
 // KONFIGURACJA MUZYKI:
-const MY_MUSIC_URL = '/muzyka.mp3';
+const MY_MUSIC_URL = 'https://landingpage.progressio.giize.com/muzyka.mp3';
 // ==========================================
 
 interface MusicPlayerProps {
@@ -22,17 +22,16 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ isVisible = true }) => {
       audioRef.current = new Audio(MY_MUSIC_URL);
       audioRef.current.loop = true;
       audioRef.current.volume = 0.2;
-      
-      // ZMIANA 1: 'metadata' zamiast 'auto' - nie ładuje całego pliku z góry
       audioRef.current.preload = 'metadata';
       
-      // ZMIANA 2: Możesz grać jak tylko jest trochę bufora
+      // Dodaj CORS support
+      audioRef.current.crossOrigin = 'anonymous';
+      
       audioRef.current.oncanplay = () => {
-        console.log("✅ Można zacząć odtwarzanie!");
+        console.log("✅ Muzyka gotowa do odtworzenia!");
         setCanPlay(true);
       };
       
-      // Progress ładowania (opcjonalnie)
       audioRef.current.onprogress = () => {
         if (audioRef.current?.buffered.length > 0) {
           const buffered = audioRef.current.buffered.end(0);
@@ -44,14 +43,15 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ isVisible = true }) => {
       };
       
       audioRef.current.onerror = (e) => {
-        console.error("❌ BŁĄD: Nie można załadować pliku muzyka.mp3", e);
+        console.error("❌ BŁĄD: Nie można załadować muzyki z CDN", e);
+        console.error("Sprawdź czy link jest dostępny:", MY_MUSIC_URL);
       };
     }
 
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
-        audioRef.current.src = ''; // Zwolnij pamięć
+        audioRef.current.src = '';
         audioRef.current = null;
       }
     };
@@ -76,7 +76,6 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ isVisible = true }) => {
       setIsPlaying(false);
     } else {
       try {
-        // ZMIANA 3: Zacznij ładować dopiero jak użytkownik kliknie
         if (audioRef.current.readyState < 2) {
           audioRef.current.load();
         }
@@ -114,14 +113,13 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ isVisible = true }) => {
             </motion.p>
           </div>
           
-          {/* ZMIANA 4: Pokazuj progress ładowania */}
           <motion.button
             onClick={toggle}
             whileHover={{ scale: 1.1, backgroundColor: '#EADDCA' }}
             whileTap={{ scale: 0.9 }}
             className="relative w-14 h-14 flex items-center justify-center border border-[#966F33]/30 rounded-full text-[#966F33] bg-white/70 backdrop-blur-md shadow-2xl transition-colors overflow-hidden"
           >
-            {/* Progress ring - pokazuje się tylko podczas ładowania */}
+            {/* Progress ring podczas ładowania */}
             {isPlaying && !canPlay && loadProgress > 0 && loadProgress < 100 && (
               <svg className="absolute inset-0 w-full h-full -rotate-90">
                 <circle
