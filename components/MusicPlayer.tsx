@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const MY_MUSIC_URL = 'https://landingpage.progressio.giize.com/music.mp3';
+const MY_MUSIC_URL = 'https://landingpage.progressio.giize.com/muzyka.mp3';
 
 interface MusicPlayerProps {
   isVisible?: boolean;
