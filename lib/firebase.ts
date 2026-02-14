@@ -1,9 +1,8 @@
-
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCw5Wdabyv6KRfGwv4CJ7SMPyvfg-y0dpY",
+  apiKey: process.env.VITE_FIREBASE_API_KEY || "AIzaSyCw5Wdabyv6KRfGwv4CJ7SMPyvfg-y0dpY",
   authDomain: "akademia-dobrego-nastroju.firebaseapp.com",
   projectId: "akademia-dobrego-nastroju",
   storageBucket: "akademia-dobrego-nastroju.firebasestorage.app",

@@ -94,6 +94,7 @@ const NarrativeGallery: React.FC<NarrativeGalleryProps> = ({ onComplete, onBack,
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(0);
   const lastTransitionTime = useRef(0);
+  const touchStart = useRef<number | null>(null);
   const COOLDOWN = 600;
 
   const next = useCallback(() => {
@@ -116,6 +117,7 @@ const NarrativeGallery: React.FC<NarrativeGalleryProps> = ({ onComplete, onBack,
     onSlideChange?.(items[index].type as 'genesis' | 'image');
   }, [index, onSlideChange]);
 
+  // Unified Scroll/Touch Handler
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
       const now = Date.now();
@@ -124,9 +126,37 @@ const NarrativeGallery: React.FC<NarrativeGalleryProps> = ({ onComplete, onBack,
       if (e.deltaY > 0) next(); else prev();
       lastTransitionTime.current = now;
     };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStart.current = e.touches[0].clientY;
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (touchStart.current === null) return;
+      const touchEnd = e.changedTouches[0].clientY;
+      const diff = touchStart.current - touchEnd;
+      const now = Date.now();
+      
+      if (now - lastTransitionTime.current < COOLDOWN) return;
+      
+      if (Math.abs(diff) > 50) { // Threshold for swipe
+        if (diff > 0) next(); else prev();
+        lastTransitionTime.current = now;
+      }
+      touchStart.current = null;
+    };
+
     const container = document.getElementById('narrative-container');
-    if (container) container.addEventListener('wheel', handleWheel as any, { passive: true });
-    return () => container?.removeEventListener('wheel', handleWheel as any);
+    if (container) {
+      container.addEventListener('wheel', handleWheel as any, { passive: true });
+      container.addEventListener('touchstart', handleTouchStart as any, { passive: true });
+      container.addEventListener('touchend', handleTouchEnd as any, { passive: true });
+    }
+    return () => {
+      container?.removeEventListener('wheel', handleWheel as any);
+      container?.removeEventListener('touchstart', handleTouchStart as any);
+      container?.removeEventListener('touchend', handleTouchEnd as any);
+    };
   }, [next, prev]);
 
   const currentItem = items[index] as any;
@@ -188,7 +218,7 @@ const NarrativeGallery: React.FC<NarrativeGalleryProps> = ({ onComplete, onBack,
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-20 items-center w-full max-w-7xl py-12 h-full">
               <div className="relative aspect-video lg:aspect-[4/5] w-full rounded-sm shadow-2xl border border-[#8B4513]/10 overflow-hidden bg-white">
-                <img src={currentItem.img} className="w-full h-full object-cover" alt={currentItem.title} />
+                <img src={currentItem.img} loading="lazy" className="w-full h-full object-cover" alt={currentItem.title} />
               </div>
               <div className="flex flex-col justify-center space-y-6 md:space-y-10">
                 <h3 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-serif text-[#1A0F0A] italic leading-[1.1] font-bold">{currentItem.title}</h3>

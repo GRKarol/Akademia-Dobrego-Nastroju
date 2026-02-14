@@ -1,10 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// ==========================================
-// KONFIGURACJA MUZYKI:
-const MY_MUSIC_URL = 'https://landingpage.progressio.giize.com/muzyka.mp3';
-// ==========================================
+const MY_MUSIC_URL = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3';
 
 interface MusicPlayerProps {
   isVisible?: boolean;
@@ -12,8 +9,9 @@ interface MusicPlayerProps {
 
 const MusicPlayer: React.FC<MusicPlayerProps> = ({ isVisible = true }) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [canPlay, setCanPlay] = useState(false);
-  const [loadProgress, setLoadProgress] = useState(0);
+  const [hasInteracted, setHasInteracted] = useState(() => {
+    return localStorage.getItem('adn_music_interacted') === 'true';
+  });
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const playPromiseRef = useRef<Promise<void> | null>(null);
 
@@ -22,43 +20,20 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ isVisible = true }) => {
       audioRef.current = new Audio(MY_MUSIC_URL);
       audioRef.current.loop = true;
       audioRef.current.volume = 0.2;
-      audioRef.current.preload = 'metadata';
       
-      // Dodaj CORS support
-      audioRef.current.crossOrigin = 'anonymous';
-      
-      audioRef.current.oncanplay = () => {
-        console.log("✅ Muzyka gotowa do odtworzenia!");
-        setCanPlay(true);
-      };
-      
-      audioRef.current.onprogress = () => {
-        if (audioRef.current?.buffered.length > 0) {
-          const buffered = audioRef.current.buffered.end(0);
-          const duration = audioRef.current.duration;
-          if (duration > 0) {
-            setLoadProgress(Math.round((buffered / duration) * 100));
-          }
-        }
-      };
-      
-      audioRef.current.onerror = (e) => {
-        console.error("❌ BŁĄD: Nie można załadować muzyki z CDN", e);
-        console.error("Sprawdź czy link jest dostępny:", MY_MUSIC_URL);
+      audioRef.current.onerror = () => {
+        console.error("BŁĄD ADN: Nie można załadować zewnętrznego pliku audio.");
       };
     }
-
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.src = '';
-        audioRef.current = null;
-      }
-    };
   }, []);
 
   const toggle = async () => {
     if (!audioRef.current) return;
+
+    if (!hasInteracted) {
+      setHasInteracted(true);
+      localStorage.setItem('adn_music_interacted', 'true');
+    }
 
     if (isPlaying) {
       if (playPromiseRef.current !== null) {
@@ -76,23 +51,20 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ isVisible = true }) => {
       setIsPlaying(false);
     } else {
       try {
-        if (audioRef.current.readyState < 2) {
-          audioRef.current.load();
-        }
-        
         const playPromise = audioRef.current.play();
         playPromiseRef.current = playPromise;
         setIsPlaying(true);
         await playPromise;
         playPromiseRef.current = null;
-        setCanPlay(true);
       } catch (error) {
-        console.error("Nie można odtworzyć muzyki:", error);
+        console.error("Playback failed:", error);
         setIsPlaying(false);
         playPromiseRef.current = null;
       }
     }
   };
+
+  const marqueeText = "MUZYKA DOBREGO NASTROJU • ";
 
   return (
     <AnimatePresence>
@@ -101,42 +73,36 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ isVisible = true }) => {
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: 20 }}
-          className="fixed top-8 right-8 z-[200] flex items-center space-x-6"
+          className="fixed top-6 right-6 md:top-8 md:right-8 z-[200] flex items-center space-x-3 md:space-x-6"
         >
-          <div className="hidden md:block overflow-hidden text-right">
-            <motion.p 
-              animate={isPlaying ? { x: [-250, 350] } : {}}
-              transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-              className="text-[9px] uppercase tracking-[0.5em] text-[#966F33] whitespace-nowrap font-bold"
-            >
-              {isPlaying ? "Sesja Dobrego Nastroju • Ambient Piano Journey • " : "Cisza przed podróżą"}
-            </motion.p>
+          <div className="overflow-hidden text-right max-w-[150px] md:max-w-none">
+            {isPlaying ? (
+              <div className="relative w-full overflow-hidden">
+                <div className="animate-marquee whitespace-nowrap">
+                  <span className="text-[8px] md:text-[9px] uppercase tracking-[0.4em] text-[#966F33] font-bold px-4">
+                    {marqueeText}
+                  </span>
+                  <span className="text-[8px] md:text-[9px] uppercase tracking-[0.4em] text-[#966F33] font-bold px-4">
+                    {marqueeText}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              !hasInteracted && (
+                <p className="text-[8px] md:text-[9px] uppercase tracking-[0.2em] md:tracking-[0.4em] text-[#966F33] font-bold italic">
+                  ZATRYMAJ SIĘ NA CHWILĘ... DOTKNIJ NUTY
+                </p>
+              )
+            )}
           </div>
-          
           <motion.button
             onClick={toggle}
             whileHover={{ scale: 1.1, backgroundColor: '#EADDCA' }}
             whileTap={{ scale: 0.9 }}
-            className="relative w-14 h-14 flex items-center justify-center border border-[#966F33]/30 rounded-full text-[#966F33] bg-white/70 backdrop-blur-md shadow-2xl transition-colors overflow-hidden"
+            className="w-10 h-10 md:w-14 md:h-14 flex items-center justify-center border border-[#966F33]/30 rounded-full text-[#966F33] bg-white/70 backdrop-blur-md shadow-2xl transition-colors"
           >
-            {/* Progress ring podczas ładowania */}
-            {isPlaying && !canPlay && loadProgress > 0 && loadProgress < 100 && (
-              <svg className="absolute inset-0 w-full h-full -rotate-90">
-                <circle
-                  cx="28"
-                  cy="28"
-                  r="24"
-                  stroke="#966F33"
-                  strokeWidth="2"
-                  fill="none"
-                  strokeDasharray={`${(loadProgress / 100) * 150.8} 150.8`}
-                  opacity="0.3"
-                />
-              </svg>
-            )}
-            
             {isPlaying ? (
-              <div className="flex space-x-1 items-end h-4 z-10">
+              <div className="flex space-x-1 items-end h-3 md:h-4">
                 {[1,2,3,4,5].map(i => (
                   <motion.div 
                     key={i} 
@@ -147,7 +113,7 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ isVisible = true }) => {
                 ))}
               </div>
             ) : (
-              <span className="text-2xl z-10">𝄞</span>
+              <span className="text-xl md:text-2xl">𝄞</span>
             )}
           </motion.button>
         </motion.div>

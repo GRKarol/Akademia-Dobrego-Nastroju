@@ -24,12 +24,12 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [direction, setDirection] = useState(0);
   
-  // Scroll locking logic during entry animation
+  // Scroll locking logic during entry animation - extended to 1s as requested
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     const timer = setTimeout(() => {
       document.body.style.overflow = 'auto';
-    }, 700); // Wait for App.tsx transition (0.6s) + small buffer
+    }, 1000); 
     
     return () => {
       document.body.style.overflow = 'auto';
@@ -81,7 +81,7 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
       opacity: 1,
       scale: 1,
       transition: {
-        duration: 0.2, // Shorter slide transition
+        duration: 0.2,
         ease: [0.16, 1, 0.3, 1] as const
       }
     },
@@ -90,7 +90,7 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
       opacity: 0,
       scale: 0.95,
       transition: {
-        duration: 0.2, // Shorter slide transition
+        duration: 0.2,
         ease: [0.16, 1, 0.3, 1] as const
       }
     })
@@ -145,24 +145,30 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
                     drag="x"
                     dragConstraints={{ left: 0, right: 0 }}
                     onDragEnd={handleDragEnd}
-                    className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-16 items-start bg-white/80 backdrop-blur-3xl border border-[#8B4513]/10 p-6 md:p-12 rounded-sm shadow-2xl cursor-grab active:cursor-grabbing"
+                    className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-16 items-start bg-white border border-[#8B4513]/10 p-6 md:p-12 rounded-sm shadow-xl cursor-grab active:cursor-grabbing"
                   >
                     <div className="space-y-6 select-none">
-                      <div className="flex items-center space-x-6">
-                        <div className="px-4 py-1.5 border border-[#966F33]/20 text-[#966F33] text-[10px] uppercase tracking-widest font-bold">Wydarzenie</div>
-                        <div className="flex items-center space-x-2 text-[#2C1810]/30 text-[10px] uppercase tracking-widest"><Clock size={12}/> <span>{new Date(activeEvents[activeIndex].timestamp).toLocaleDateString()}</span></div>
+                      <div className="flex items-center space-x-4">
+                        <div className="px-3 py-1 border border-[#966F33]/20 text-[#966F33] text-[9px] uppercase tracking-widest font-bold">Wydarzenie</div>
+                        <div className="flex items-center space-x-2 text-[#2C1810]/30 text-[9px] uppercase tracking-widest font-bold"><Clock size={12}/> <span>{activeEvents[activeIndex].date}</span></div>
                       </div>
-                      <h3 className="font-serif text-4xl md:text-6xl leading-tight text-[#2C1810] italic drop-shadow-sm">{activeEvents[activeIndex].title}</h3>
+                      <h3 className="font-serif text-4xl md:text-7xl leading-tight text-[#2C1810] italic font-bold uppercase">{activeEvents[activeIndex].title}</h3>
                       <div className="text-[#2C1810]/60 font-light text-base md:text-lg leading-relaxed whitespace-pre-wrap">{activeEvents[activeIndex].description}</div>
-                      <div className="pt-6 flex flex-wrap gap-6 border-t border-[#2C1810]/10">
-                        <div className="flex items-center space-x-3"><Calendar size={20} className="text-[#966F33]" /><span className="font-serif italic text-[#2C1810]/80">{activeEvents[activeIndex].date}</span></div>
-                        <div className="flex items-center space-x-3"><MapPin size={20} className="text-[#966F33]" /><span className="font-serif italic text-[#2C1810]/80">{activeEvents[activeIndex].location}</span></div>
+                      <div className="pt-8 flex flex-wrap gap-8 border-t border-[#2C1810]/10">
+                        <div className="flex items-center space-x-3 group/info">
+                          <Calendar size={20} className="text-[#966F33]" />
+                          <span className="font-serif italic text-sm md:text-lg text-[#2C1810]/80">Let's goo</span>
+                        </div>
+                        <div className="flex items-center space-x-3 group/info">
+                          <MapPin size={20} className="text-[#966F33]" />
+                          <span className="font-serif italic text-sm md:text-lg text-[#2C1810]/80">{activeEvents[activeIndex].location}</span>
+                        </div>
                       </div>
                     </div>
-                    <div className="relative w-full h-auto overflow-hidden rounded-sm border border-[#2C1810]/10 shadow-lg bg-white p-2">
+                    <div className="relative w-full aspect-square md:aspect-auto h-auto overflow-hidden rounded-sm border border-[#2C1810]/5 bg-white p-2">
                       <img 
                         src={activeEvents[activeIndex].image || "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4"} 
-                        className="w-full h-auto object-contain block rounded-sm grayscale-[0.2] hover:grayscale-0 transition-all duration-700" 
+                        className="w-full h-full object-cover block rounded-sm grayscale-[0.2] hover:grayscale-0 transition-all duration-700" 
                         alt={activeEvents[activeIndex].title}
                       />
                     </div>
@@ -192,8 +198,8 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
 
         {/* ARCHIWUM WYDARZEŃ */}
         <section className="pb-32">
-          <div className="bg-white/60 backdrop-blur-xl border border-[#2C1810]/10 rounded-sm overflow-hidden shadow-2xl">
-            <div className="px-8 py-10 border-b border-[#2C1810]/10 bg-gradient-to-b from-white to-transparent flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="bg-white border border-[#2C1810]/10 rounded-sm overflow-hidden shadow-xl">
+            <div className="px-8 py-10 border-b border-[#2C1810]/10 bg-[#FAF9F6] flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div className="flex items-center space-x-4">
                 <div className="p-3 bg-[#966F33]/10 rounded-full text-[#966F33]">
                   <History size={24} />
@@ -209,7 +215,7 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
               </div>
             </div>
 
-            <div className="max-h-[600px] overflow-y-auto custom-scrollbar p-6 md:p-10 bg-[#FAF9F6]">
+            <div className="max-h-[600px] overflow-y-auto custom-scrollbar p-6 md:p-10 bg-white">
               {archivedEvents.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
                   {archivedEvents.map((ev, i) => (
@@ -218,7 +224,7 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
                       initial={{ opacity: 0, y: 20 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.05 }}
-                      className="group bg-white border border-[#8B4513]/10 p-8 rounded-sm hover:border-[#966F33]/40 hover:shadow-xl transition-all duration-500 relative overflow-hidden"
+                      className="group bg-[#FAF9F6] border border-[#8B4513]/10 p-8 rounded-sm hover:border-[#966F33]/40 hover:shadow-xl transition-all duration-500 relative overflow-hidden"
                     >
                       <div className="absolute inset-0 bg-gradient-to-br from-[#966F33]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                       
@@ -228,7 +234,7 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
                           <History size={14} className="text-[#2C1810]/10 group-hover:text-[#966F33]/40 transition-colors" />
                         </div>
                         
-                        <h4 className="font-serif text-2xl text-[#2C1810]/80 italic mb-4 group-hover:text-[#2C1810] transition-colors">{ev.title}</h4>
+                        <h4 className="font-serif text-2xl text-[#2C1810]/80 italic mb-4 group-hover:text-[#2C1810] transition-colors uppercase font-bold">{ev.title}</h4>
                         <p className="text-[#2C1810]/40 text-sm font-light leading-relaxed line-clamp-3 italic group-hover:text-[#2C1810]/70 transition-colors">{ev.description}</p>
                         
                         <div className="mt-8 flex items-center space-x-4 opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0 duration-500">
@@ -247,7 +253,7 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
               )}
             </div>
             
-            <div className="px-8 py-6 border-t border-[#2C1810]/10 bg-white/40 text-center">
+            <div className="px-8 py-6 border-t border-[#2C1810]/10 bg-[#FAF9F6] text-center">
               <p className="text-[9px] uppercase tracking-[0.3em] text-[#2C1810]/30 italic">Historia, która buduje naszą przyszłość</p>
             </div>
           </div>

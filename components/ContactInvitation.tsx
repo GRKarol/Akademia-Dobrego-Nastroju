@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Phone, Mail, ArrowLeft, Loader2, ExternalLink, MapPin, Facebook, ArrowRight, Sparkles } from 'lucide-react';
 import { db } from '../lib/firebase';
@@ -19,21 +19,33 @@ const ContactInvitation: React.FC<ContactInvitationProps> = ({ onBack, onJoinClu
   const [code, setCode] = useState('');
   const [error, setError] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll transition logic with improved threshold
+  // Use IntersectionObserver for more reliable transition detection at the bottom
   useEffect(() => {
-    const handleScroll = () => {
-      const scrollPosition = window.innerHeight + window.scrollY;
-      const scrollHeight = document.documentElement.scrollHeight;
-      
-      // Trigger transition only when user firmly scrolls at the very bottom
-      if (scrollHeight - scrollPosition < 5 && onGoToEvents) {
-        onGoToEvents();
-      }
-    };
+    if (!onGoToEvents) return;
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          // Add a small delay for a more natural feel
+          const timer = setTimeout(() => {
+            onGoToEvents();
+          }, 400); // Nieco dłuższy delay dla "masterpiece" feel
+          return () => clearTimeout(timer);
+        }
+      },
+      { 
+        threshold: 0.05, // Bardzo czuły punkt na samym dnie
+        rootMargin: '0px 0px 200px 0px' 
+      }
+    );
+
+    if (bottomRef.current) {
+      observer.observe(bottomRef.current);
+    }
+
+    return () => observer.disconnect();
   }, [onGoToEvents]);
 
   const handleCodeSubmit = async (e: React.FormEvent) => {
@@ -61,7 +73,7 @@ const ContactInvitation: React.FC<ContactInvitationProps> = ({ onBack, onJoinClu
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#F1E9D2] text-[#121212] selection:bg-[#966F33] selection:text-white pb-[40vh] overflow-x-hidden">
+    <div className="w-full min-h-screen bg-[#F1E9D2] text-[#121212] selection:bg-[#966F33] selection:text-white overflow-x-hidden">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
         {onBack && (
@@ -79,7 +91,8 @@ const ContactInvitation: React.FC<ContactInvitationProps> = ({ onBack, onJoinClu
         {/* Header Section */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
           transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
           className="max-w-4xl mb-20"
         >
@@ -125,18 +138,18 @@ const ContactInvitation: React.FC<ContactInvitationProps> = ({ onBack, onJoinClu
               </div>
             </a>
 
-            <a href="mailto:akadiemiadobregonastroju@gmail.com" className="flex items-center space-x-6 group overflow-hidden">
+            <a href="mailto:akademiadobregonastroju@gmail.com" className="flex items-center space-x-6 group overflow-hidden">
               <div className="w-12 h-12 flex items-center justify-center border border-[#8B4513]/20 rounded-full text-[#8B4513] group-hover:bg-[#8B4513] group-hover:text-white transition-all">
                 <Mail size={20} strokeWidth={1.5} />
               </div>
               <div className="overflow-hidden">
                 <span className="block text-[10px] uppercase tracking-widest text-[#121212]/40 mb-1 font-bold">Napisz wiadomość</span>
-                <span className="text-lg md:text-2xl font-serif text-[#121212] block truncate">akadiemiadobregonastroju@gmail.com</span>
+                <span className="text-lg md:text-2xl font-serif text-[#121212] block truncate">akademiadobregonastroju@gmail.com</span>
               </div>
             </a>
 
             <a 
-              href="https://www.facebook.com/profile.php?id=61561081691129" 
+              href="https://www.facebook.com/people/Akademia-Dobrego-Nastroju/100072041536375/" 
               target="_blank" 
               rel="noopener noreferrer"
               className="inline-flex items-center space-x-4 text-[#966F33] hover:text-[#8B4513] transition-all group pt-4"
@@ -156,7 +169,7 @@ const ContactInvitation: React.FC<ContactInvitationProps> = ({ onBack, onJoinClu
           </div>
           
           <div className="relative group">
-            <div className="w-full aspect-video md:aspect-[21/9] bg-white rounded-sm overflow-hidden border-8 border-white shadow-2xl relative">
+            <div className="w-full h-[400px] md:h-auto md:aspect-[21/9] bg-white rounded-sm overflow-hidden border-8 border-white shadow-2xl relative">
               <iframe 
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2520.1017014467264!2d18.9248473!3d50.9031735!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4710b71946399023%3A0x9599d10e6ca70e0a!2sKr%C4%99ta%2023%2C%2042-100%20K%C5%82obuck!5e0!3m2!1spl!2spl!4v1740924976451!5m2!1spl!2spl" 
                 width="100%" 
@@ -211,7 +224,7 @@ const ContactInvitation: React.FC<ContactInvitationProps> = ({ onBack, onJoinClu
         </section>
 
         {/* Private Club Section */}
-        <section className="max-w-4xl mx-auto pt-24 mb-20">
+        <section className="max-w-4xl mx-auto pt-24 mb-40">
           <div className="text-center">
             <div className="bg-[#EADDCA] p-10 md:p-24 rounded-sm border border-[#121212]/10 shadow-lg space-y-12">
               <div className="space-y-4">
@@ -251,25 +264,29 @@ const ContactInvitation: React.FC<ContactInvitationProps> = ({ onBack, onJoinClu
           </div>
         </section>
 
-        {/* Dynamic Transition Indicator */}
-        <div className="mt-40 flex flex-col items-center">
+        {/* Dynamic Transition Indicator (Masterpiece Transition) */}
+        {/* JESZCZE WIĘKSZY ODSTĘP przed triggerem końcowym */}
+        <div className="h-[150vh] flex flex-col items-center justify-start pt-40">
           <motion.div 
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
-            className="flex flex-col items-center space-y-6 text-[#8B4513]"
+            className="flex flex-col items-center space-y-12 text-[#8B4513]"
           >
-            <div className="px-6 py-2 border border-[#8B4513]/20 rounded-full">
-              <p className="font-serif italic text-sm tracking-[0.3em] uppercase opacity-40">Przewiń, aby wejść do galerii wydarzeń</p>
+            <div className="px-10 py-4 border border-[#8B4513]/20 rounded-full bg-white/10 backdrop-blur-sm shadow-xl">
+              <p className="font-serif italic text-sm tracking-[0.5em] uppercase opacity-70">Zejdź głębiej, by powrócić do początku</p>
             </div>
-            <div className="relative h-32 w-px overflow-hidden">
+            
+            <div className="relative h-96 w-px overflow-hidden bg-[#8B4513]/5">
                <motion.div 
-                  animate={{ y: [0, 128] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                  animate={{ y: [-384, 768] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
                   className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-transparent via-[#8B4513] to-transparent"
                />
-               <div className="h-full w-full bg-[#8B4513]/10" />
             </div>
-            <Sparkles size={20} className="animate-pulse opacity-30" />
+            
+            <div ref={bottomRef} className="w-16 h-16 flex items-center justify-center">
+              <Sparkles size={40} className="animate-pulse opacity-50" />
+            </div>
           </motion.div>
         </div>
       </div>

@@ -14,6 +14,8 @@ const App: React.FC = () => {
   const [view, setView] = useState<ViewState>('landing');
   const [currentSlideType, setCurrentSlideType] = useState<'genesis' | 'image' | null>(null);
   const [activeCode, setActiveCode] = useState<string | null>(null);
+  const [isGuided, setIsGuided] = useState(false);
+  const [isInteractionBlocked, setIsInteractionBlocked] = useState(false);
   
   useEffect(() => {
     const handleScroll = () => {
@@ -30,15 +32,35 @@ const App: React.FC = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, [view]);
+    // Jeśli wróciliśmy do menu przez scroll z kontaktu, blokujemy interakcję na 1s
+    if (view === 'choice' && isGuided) {
+      setIsInteractionBlocked(true);
+      document.body.style.overflow = 'hidden';
+      const timer = setTimeout(() => {
+        setIsInteractionBlocked(false);
+        document.body.style.overflow = 'auto';
+      }, 1000);
+      return () => {
+        clearTimeout(timer);
+        document.body.style.overflow = 'auto';
+      };
+    }
+  }, [view, isGuided]);
 
   const handleJoinClub = (code: string) => {
     setActiveCode(code);
     setView('club');
   };
 
-  const handleGoToEvents = () => {
-    setView('events');
+  const handleReturnToMenuFromScroll = () => {
+    setIsGuided(true);
+    setView('choice');
+  };
+
+  const navigate = (newView: ViewState) => {
+    if (isInteractionBlocked) return;
+    setIsGuided(false); // Resetujemy przewodnika po kliknięciu w cokolwiek
+    setView(newView);
   };
 
   return (
@@ -51,8 +73,8 @@ const App: React.FC = () => {
           <motion.div
             key="view-landing"
             initial={{ opacity: 1 }}
-            exit={{ opacity: 0, y: -50 }}
-            transition={{ duration: 0.8, ease: "easeInOut" }}
+            exit={{ opacity: 0, y: -100, filter: 'blur(20px)', scale: 1.1 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="relative z-10 h-[120vh]"
           >
             <Hero />
@@ -62,28 +84,56 @@ const App: React.FC = () => {
         {view === 'choice' && (
           <motion.section
             key="view-choice"
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.02 }}
-            transition={{ duration: 0.8 }}
+            initial={{ opacity: 0, scale: 0.9, filter: 'blur(30px)' }}
+            animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, scale: 1.1, filter: 'blur(20px)' }}
+            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
             className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#EADDCA] px-6"
           >
+            {isInteractionBlocked && (
+              <div className="absolute inset-0 z-[60] cursor-wait" />
+            )}
             <div className="flex flex-col items-center justify-center w-full max-w-6xl relative z-10">
               <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-16">
-                <ChoiceButton title="1: Geneza" subtitle="Historia i Wnętrza" onClick={() => setView('story')} />
-                <ChoiceButton title="2: Kontakt" subtitle="dołącz do nas" onClick={() => setView('contact')} />
-                <ChoiceButton title="3: Wydarzenia" subtitle="Zobacz co się dzieje" onClick={() => setView('events')} />
+                <ChoiceButton 
+                  title="1: Geneza" 
+                  subtitle="Historia i Wnętrza" 
+                  onClick={() => navigate('story')} 
+                />
+                <ChoiceButton 
+                  title="2: Kontakt" 
+                  subtitle={isGuided ? "Ostatnio odwiedzona sekcja" : "dołącz do nas"} 
+                  isHighlighted={isGuided}
+                  onClick={() => navigate('contact')} 
+                />
+                <ChoiceButton 
+                  title="3: Wydarzenia" 
+                  subtitle={isGuided ? "następny krok" : "Zobacz co się dzieje"} 
+                  isNextStep={isGuided}
+                  onClick={() => navigate('events')} 
+                />
               </div>
-              <button onClick={() => setView('landing')} className="font-serif italic text-[#8B4513] tracking-[0.4em] text-sm md:text-lg px-10 py-3 border border-[#8B4513]/20 hover:border-[#966F33] rounded-sm bg-white/40 shadow-lg">P O W R Ó T</button>
+              <button 
+                onClick={() => navigate('landing')} 
+                className="font-serif italic text-[#8B4513] tracking-[0.4em] text-sm md:text-lg px-10 py-3 border border-[#8B4513]/20 hover:border-[#966F33] rounded-sm bg-white/40 shadow-lg transition-all"
+              >
+                P O W R Ó T
+              </button>
             </div>
           </motion.section>
         )}
 
         {view === 'story' && (
-          <motion.div key="view-story" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <motion.div 
+            key="view-story" 
+            initial={{ opacity: 0, x: 100 }} 
+            animate={{ opacity: 1, x: 0 }} 
+            exit={{ opacity: 0, x: -100, filter: 'blur(10px)' }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          >
             <NarrativeGallery 
-              onComplete={() => setView('contact')} 
-              onBack={() => setView('choice')}
+              onComplete={() => navigate('contact')} 
+              onBack={() => navigate('choice')}
               onSlideChange={(type) => setCurrentSlideType(type)}
             />
           </motion.div>
@@ -92,30 +142,40 @@ const App: React.FC = () => {
         {view === 'contact' && (
           <motion.div 
             key="view-contact" 
-            initial={{ opacity: 0, scale: 0.95, filter: 'blur(10px)' }} 
+            initial={{ opacity: 0, scale: 0.95, filter: 'blur(20px)' }} 
             animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }} 
-            exit={{ opacity: 0, scale: 1.1, filter: 'blur(20px)' }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            exit={{ opacity: 0, scale: 1.05, filter: 'blur(40px)', y: -150 }}
+            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
           >
-            <ContactInvitation onBack={() => setView('choice')} onJoinClub={handleJoinClub} onGoToEvents={handleGoToEvents} />
+            <ContactInvitation 
+              onBack={() => navigate('choice')} 
+              onJoinClub={handleJoinClub} 
+              onGoToEvents={handleReturnToMenuFromScroll} 
+            />
           </motion.div>
         )}
 
         {view === 'events' && (
            <motion.div 
             key="view-events" 
-            initial={{ opacity: 0, scale: 0.9, filter: 'blur(20px)' }} 
-            animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }} 
+            initial={{ opacity: 0, scale: 1.1, filter: 'blur(30px)', y: 100 }} 
+            animate={{ opacity: 1, scale: 1, filter: 'blur(0px)', y: 0 }} 
             exit={{ opacity: 0, scale: 1.1, filter: 'blur(20px)' }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
            >
-             <EventsView onBack={() => setView('choice')} />
+             <EventsView onBack={() => navigate('choice')} />
            </motion.div>
         )}
 
         {view === 'club' && activeCode && (
-          <motion.div key="view-club" initial={{ opacity: 0, scale: 1.1 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
-            <ClubRoom code={activeCode} onExit={() => setView('choice')} />
+          <motion.div 
+            key="view-club" 
+            initial={{ opacity: 0, scale: 1.1, filter: 'blur(20px)' }} 
+            animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }} 
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ duration: 0.8 }}
+          >
+            <ClubRoom code={activeCode} onExit={() => navigate('choice')} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -123,16 +183,51 @@ const App: React.FC = () => {
   );
 };
 
-const ChoiceButton = ({ title, subtitle, onClick }: { title: string, subtitle: string, onClick: () => void }) => (
+const ChoiceButton = ({ 
+  title, 
+  subtitle, 
+  onClick, 
+  isHighlighted, 
+  isNextStep 
+}: { 
+  title: string, 
+  subtitle: string, 
+  onClick: () => void,
+  isHighlighted?: boolean,
+  isNextStep?: boolean
+}) => (
   <motion.button
-    whileHover={{ scale: 1.05, backgroundColor: "rgba(255, 255, 255, 0.95)" }}
+    whileHover={{ scale: 1.05, backgroundColor: "rgba(255, 255, 255, 0.95)", boxShadow: "0 25px 50px -12px rgba(139, 69, 19, 0.2)" }}
     whileTap={{ scale: 0.98 }}
     onClick={onClick}
-    className="group p-8 md:p-12 border border-[#8B4513]/10 rounded-sm bg-white/60 shadow-xl flex flex-col items-center justify-center space-y-4"
+    className={`group p-8 md:p-12 border rounded-sm shadow-xl flex flex-col items-center justify-center space-y-4 transition-all duration-500 relative overflow-hidden ${
+      isNextStep 
+        ? 'border-[#966F33] bg-[#F5F2EB]' 
+        : isHighlighted 
+          ? 'border-[#8B4513]/40 bg-white/40' 
+          : 'border-[#8B4513]/10 bg-white/60'
+    }`}
   >
-    <h3 className="font-serif text-2xl md:text-4xl text-[#2C1810] group-hover:text-[#966F33] italic">{title}</h3>
-    <p className="text-[#8B4513]/60 text-[10px] tracking-[0.3em] uppercase">{subtitle}</p>
-    <div className="w-6 h-px bg-[#966F33]/20 group-hover:w-16 transition-all duration-700" />
+    {isNextStep && (
+      <motion.div 
+        animate={{ opacity: [0.2, 0.5, 0.2] }} 
+        transition={{ duration: 2, repeat: Infinity }}
+        className="absolute inset-0 bg-[#D4AF37]/5 pointer-events-none" 
+      />
+    )}
+    <h3 className={`font-serif text-2xl md:text-4xl italic transition-colors duration-500 ${
+      isNextStep ? 'text-[#966F33]' : 'text-[#2C1810]'
+    }`}>
+      {title}
+    </h3>
+    <p className={`text-[10px] tracking-[0.3em] uppercase transition-colors duration-500 font-bold ${
+      isNextStep ? 'text-[#966F33]' : isHighlighted ? 'text-[#8B4513]/40' : 'text-[#8B4513]/60'
+    }`}>
+      {subtitle}
+    </p>
+    <div className={`h-px transition-all duration-700 ${
+      isNextStep ? 'w-24 bg-[#966F33]' : 'w-6 bg-[#966F33]/20 group-hover:w-16'
+    }`} />
   </motion.button>
 );
 
