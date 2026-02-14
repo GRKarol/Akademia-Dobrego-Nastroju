@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const MY_MUSIC_URL = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3';
+const MY_MUSIC_URL = 'https://landingpage.progressio.giize.com/music.mp3';
 
 interface MusicPlayerProps {
   isVisible?: boolean;
@@ -22,7 +22,7 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ isVisible = true }) => {
       audioRef.current.volume = 0.2;
       
       audioRef.current.onerror = () => {
-        console.error("BŁĄD ADN: Nie można załadować zewnętrznego pliku audio.");
+        console.error("BŁĄD: Nie można załadować pliku audio.");
       };
     }
   }, []);
