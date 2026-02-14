@@ -219,7 +219,7 @@ useEffect(() => {
       unsubAllUsers();
     };
   }, [code]);
-
+);
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, activeTab]);
