@@ -115,13 +115,79 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
 
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const userRef = doc(db, "adn_users", code);
-    const unsubUser = onSnapshot(userRef, (snap) => {
+useEffect(() => {
+  const userRef = doc(db, "adn_users", code);
+  
+  // DODAJ ERROR HANDLER!
+  const unsubUser = onSnapshot(
+    userRef, 
+    (snap) => {
       if (snap.exists()) {
         setUser(snap.data() as AdnUser);
       }
-    });
+    },
+    (error) => {
+      console.error("❌ Firebase User Error:", error);
+      console.error("❌ Error code:", error.code);
+      console.error("❌ Error message:", error.message);
+      alert(`Błąd Firebase: ${error.message}`);
+    }
+  );
+
+  const qMessages = query(collection(db, "messages"), orderBy("timestamp", "asc"));
+  const unsubMessages = onSnapshot(
+    qMessages, 
+    (snap) => {
+      const msgs = snap.docs.map(d => ({ id: d.id, ...d.data() })) as Message[];
+      setMessages(msgs);
+    },
+    (error) => {
+      console.error("❌ Firebase Messages Error:", error);
+    }
+  );
+
+  const qEvents = query(collection(db, "adn_events"), orderBy("order", "asc"));
+  const unsubEvents = onSnapshot(
+    qEvents, 
+    (snap) => {
+      const evs = snap.docs.map(d => ({ id: d.id, ...d.data() })) as AdnEvent[];
+      setAdnEvents(evs);
+    },
+    (error) => {
+      console.error("❌ Firebase Events Error:", error);
+    }
+  );
+
+  const qCodes = collection(db, "access_codes");
+  const unsubCodes = onSnapshot(
+    qCodes, 
+    (snap) => {
+      setValidCodes(snap.docs.map(d => ({ id: d.id, ...d.data() })) as AccessCode[]);
+    },
+    (error) => {
+      console.error("❌ Firebase Codes Error:", error);
+    }
+  );
+
+  const qAllUsers = collection(db, "adn_users");
+  const unsubAllUsers = onSnapshot(
+    qAllUsers, 
+    (snap) => {
+      setAllUsers(snap.docs.map(d => d.data() as AdnUser));
+    },
+    (error) => {
+      console.error("❌ Firebase All Users Error:", error);
+    }
+  );
+
+  return () => {
+    unsubUser();
+    unsubMessages();
+    unsubEvents();
+    unsubCodes();
+    unsubAllUsers();
+  };
+}, [code]);
 
     const qMessages = query(collection(db, "messages"), orderBy("timestamp", "asc"));
     const unsubMessages = onSnapshot(qMessages, (snap) => {
