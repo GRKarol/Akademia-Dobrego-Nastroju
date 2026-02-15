@@ -86,6 +86,38 @@ const ContactInvitation: React.FC<ContactInvitationProps> = ({ onBack, onJoinClu
           </button>
         )}
       </nav>
+const handleCodeSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setIsValidating(true);
+  const inputCode = code.toLowerCase().trim();
+  
+  console.log("🔎 Szukam kodu:", inputCode);
+  
+  try {
+    const snap = await getDocs(collection(db, "access_codes"));
+    const codes = snap.docs.map(d => d.data() as AccessCode);
+    
+    console.log("📋 Wszystkie kody w bazie:", codes);
+    
+    const found = codes.find(c => c.value === inputCode);
+    
+    console.log("✅ Znaleziony kod?", found);
+    
+    if (found) {
+      console.log("🎉 Kod jest poprawny! Wywołuję onJoinClub z:", inputCode);
+      onJoinClub?.(inputCode);
+    } else {
+      console.log("❌ Kod niepoprawny!");
+      setError(true);
+      setTimeout(() => setError(false), 2000);
+    }
+  } catch (err) {
+    console.error("💥 Firebase error:", err);
+    setError(true);
+  } finally {
+    setIsValidating(false);
+  }
+};
 
       <div className="max-w-screen-xl mx-auto px-6 md:px-12 pt-32 pb-12">
         {/* Header Section */}
