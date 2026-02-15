@@ -21,22 +21,20 @@ const ContactInvitation: React.FC<ContactInvitationProps> = ({ onBack, onJoinClu
   const [isValidating, setIsValidating] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Use IntersectionObserver for more reliable transition detection at the bottom
   useEffect(() => {
     if (!onGoToEvents) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
-          // Add a small delay for a more natural feel
           const timer = setTimeout(() => {
             onGoToEvents();
-          }, 400); // Nieco dłuższy delay dla "masterpiece" feel
+          }, 400);
           return () => clearTimeout(timer);
         }
       },
       { 
-        threshold: 0.05, // Bardzo czuły punkt na samym dnie
+        threshold: 0.05,
         rootMargin: '0px 0px 200px 0px' 
       }
     );
@@ -53,19 +51,28 @@ const ContactInvitation: React.FC<ContactInvitationProps> = ({ onBack, onJoinClu
     setIsValidating(true);
     const inputCode = code.toLowerCase().trim();
     
+    console.log("🔎 Szukam kodu:", inputCode);
+    
     try {
       const snap = await getDocs(collection(db, "access_codes"));
       const codes = snap.docs.map(d => d.data() as AccessCode);
+      
+      console.log("📋 Wszystkie kody w bazie:", codes);
+      
       const found = codes.find(c => c.value === inputCode);
       
+      console.log("✅ Znaleziony kod?", found);
+      
       if (found) {
+        console.log("🎉 Kod jest poprawny! Wywołuję onJoinClub z:", inputCode);
         onJoinClub?.(inputCode);
       } else {
+        console.log("❌ Kod niepoprawny!");
         setError(true);
         setTimeout(() => setError(false), 2000);
       }
     } catch (err) {
-      console.error("Firebase error:", err);
+      console.error("💥 Firebase error:", err);
       setError(true);
     } finally {
       setIsValidating(false);
@@ -74,7 +81,6 @@ const ContactInvitation: React.FC<ContactInvitationProps> = ({ onBack, onJoinClu
 
   return (
     <div className="w-full min-h-screen bg-[#F1E9D2] text-[#121212] selection:bg-[#966F33] selection:text-white overflow-x-hidden">
-      {/* Navigation */}
       <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
         {onBack && (
           <button 
@@ -86,41 +92,8 @@ const ContactInvitation: React.FC<ContactInvitationProps> = ({ onBack, onJoinClu
           </button>
         )}
       </nav>
-const handleCodeSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setIsValidating(true);
-  const inputCode = code.toLowerCase().trim();
-  
-  console.log("🔎 Szukam kodu:", inputCode);
-  
-  try {
-    const snap = await getDocs(collection(db, "access_codes"));
-    const codes = snap.docs.map(d => d.data() as AccessCode);
-    
-    console.log("📋 Wszystkie kody w bazie:", codes);
-    
-    const found = codes.find(c => c.value === inputCode);
-    
-    console.log("✅ Znaleziony kod?", found);
-    
-    if (found) {
-      console.log("🎉 Kod jest poprawny! Wywołuję onJoinClub z:", inputCode);
-      onJoinClub?.(inputCode);
-    } else {
-      console.log("❌ Kod niepoprawny!");
-      setError(true);
-      setTimeout(() => setError(false), 2000);
-    }
-  } catch (err) {
-    console.error("💥 Firebase error:", err);
-    setError(true);
-  } finally {
-    setIsValidating(false);
-  }
-};
 
       <div className="max-w-screen-xl mx-auto px-6 md:px-12 pt-32 pb-12">
-        {/* Header Section */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -145,7 +118,6 @@ const handleCodeSubmit = async (e: React.FormEvent) => {
           </p>
         </motion.div>
 
-        {/* Action Title */}
         <motion.div 
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -157,7 +129,6 @@ const handleCodeSubmit = async (e: React.FormEvent) => {
           </h3>
         </motion.div>
 
-        {/* Contact Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-32 items-start">
           <div className="space-y-10">
             <a href="tel:+48502105729" className="flex items-center space-x-6 group">
@@ -193,7 +164,6 @@ const handleCodeSubmit = async (e: React.FormEvent) => {
           </div>
         </div>
 
-        {/* Map Section */}
         <section className="space-y-10 mb-40">
           <div className="space-y-2">
             <h3 className="font-serif text-4xl md:text-6xl italic">Tutaj jesteśmy:</h3>
@@ -232,7 +202,6 @@ const handleCodeSubmit = async (e: React.FormEvent) => {
           </div>
         </section>
 
-        {/* Events Button Area */}
         <section className="max-w-4xl mx-auto pt-12 mb-20">
            <div className="flex flex-col items-center text-center space-y-10">
               <div className="space-y-4">
@@ -255,7 +224,6 @@ const handleCodeSubmit = async (e: React.FormEvent) => {
            </div>
         </section>
 
-        {/* Private Club Section */}
         <section className="max-w-4xl mx-auto pt-24 mb-40">
           <div className="text-center">
             <div className="bg-[#EADDCA] p-10 md:p-24 rounded-sm border border-[#121212]/10 shadow-lg space-y-12">
@@ -296,8 +264,6 @@ const handleCodeSubmit = async (e: React.FormEvent) => {
           </div>
         </section>
 
-        {/* Dynamic Transition Indicator (Masterpiece Transition) */}
-        {/* JESZCZE WIĘKSZY ODSTĘP przed triggerem końcowym */}
         <div className="h-[150vh] flex flex-col items-center justify-start pt-40">
           <motion.div 
             initial={{ opacity: 0 }}
