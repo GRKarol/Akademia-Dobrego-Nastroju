@@ -32,7 +32,8 @@ const App: React.FC = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    // Jeśli wróciliśmy do menu przez scroll z kontaktu, blokujemy interakcję na 1s
+    
+    // ⚠️ ZMIANA 1: Blokada interakcji NIE dotyczy widoku 'club'
     if (view === 'choice' && isGuided) {
       setIsInteractionBlocked(true);
       document.body.style.overflow = 'hidden';
@@ -45,21 +46,19 @@ const App: React.FC = () => {
         document.body.style.overflow = 'auto';
       };
     }
+    
+    // ⚠️ ZMIANA 2: Dla widoku 'club' wymuszamy overflow auto
+    if (view === 'club') {
+      document.body.style.overflow = 'auto';
+    }
   }, [view, isGuided]);
 
-const handleJoinClub = (code: string) => {
-  console.log("🔵 handleJoinClub wywołany!");
-  console.log("🔵 Otrzymany kod:", code);
-  console.log("🔵 Typ kodu:", typeof code);
-  console.log("🔵 Długość kodu:", code?.length);
-  
-  setActiveCode(code);
-  console.log("🔵 activeCode ustawiony na:", code);
-  
-  setView('club');
-  console.log("🔵 view zmieniony na: club");
-};
-
+  const handleJoinClub = (code: string) => {
+    console.log("🔵 handleJoinClub wywołany z kodem:", code);
+    setActiveCode(code);
+    setView('club');
+    setIsGuided(false); // ⚠️ Resetujemy guided, żeby nie kolidowało z blokowaniem
+  };
 
   const handleReturnToMenuFromScroll = () => {
     setIsGuided(true);
@@ -68,16 +67,19 @@ const handleJoinClub = (code: string) => {
 
   const navigate = (newView: ViewState) => {
     if (isInteractionBlocked) return;
-    setIsGuided(false); // Resetujemy przewodnika po kliknięciu w cokolwiek
+    setIsGuided(false);
     setView(newView);
   };
+
+  // ⚠️ ZMIANA 3: Console.log przeniesiony tutaj (debug)
+  console.log("🟣 App render - view:", view, "activeCode:", activeCode);
 
   return (
     <div className="relative bg-[#F5F5F5] min-h-screen selection:bg-[#D4AF37] selection:text-white overflow-x-hidden">
       <CustomCursor />
       <MusicPlayer isVisible={view !== 'story' || currentSlideType === 'image'} />
 
-     <AnimatePresence mode="sync">
+      <AnimatePresence mode="sync">
         {view === 'landing' && (
           <motion.div
             key="view-landing"
@@ -176,33 +178,45 @@ const handleJoinClub = (code: string) => {
            </motion.div>
         )}
 
-{console.log("🟣 Render check - view:", view, "activeCode:", activeCode)}
-
-{view === 'club' && activeCode ? (
-  <>
-    {console.log("🟢 RENDERUJĘ ClubRoom z kodem:", activeCode)}
-    <motion.div 
-      key="view-club" 
-      initial={{ opacity: 0, scale: 1.1, filter: 'blur(20px)' }} 
-      animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }} 
-      exit={{ opacity: 0, scale: 0.9 }}
-      transition={{ duration: 0.8 }}
-    >
-      <ClubRoom code={activeCode} onExit={() => navigate('choice')} />
-    </motion.div>
-  </>
-) : view === 'club' && !activeCode ? (
-  <>
-    {console.log("🔴 NIE RENDERUJĘ - brak activeCode! view:", view)}
-    <div className="fixed inset-0 z-[200] bg-red-500 flex items-center justify-center text-white text-2xl">
-      <div className="text-center">
-        <p className="mb-4">❌ BŁĄD: Brak activeCode</p>
-        <p className="text-sm">view: {view}</p>
-        <p className="text-sm">activeCode: {String(activeCode)}</p>
-      </div>
-    </div>
-  </>
-) : null}
+        {/* ⚠️ ZMIANA 4: ClubRoom PRZENIESIONY TUTAJ - wewnątrz AnimatePresence */}
+        {view === 'club' && (
+          <motion.div 
+            key="view-club" 
+            initial={{ opacity: 0, scale: 1.05 }} 
+            animate={{ opacity: 1, scale: 1 }} 
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="fixed inset-0 z-[9999] bg-[#F5F5F5]" // ⚠️ ZMIANA 5: Fixed + wysoki z-index
+          >
+            {activeCode ? (
+              <>
+                {console.log("🟢 RENDERUJĘ ClubRoom z kodem:", activeCode)}
+                <ClubRoom 
+                  code={activeCode} 
+                  onExit={() => {
+                    console.log("🔴 ClubRoom.onExit wywołany - użytkownik kliknął Wyjdź");
+                    navigate('choice');
+                  }} 
+                />
+              </>
+            ) : (
+              <div className="fixed inset-0 bg-red-500 flex items-center justify-center text-white text-2xl">
+                <div className="text-center p-8">
+                  <p className="mb-4 text-4xl">❌ BŁĄD</p>
+                  <p className="mb-2">Brak activeCode!</p>
+                  <p className="text-sm opacity-70">view: {view}</p>
+                  <p className="text-sm opacity-70">activeCode: {String(activeCode)}</p>
+                  <button 
+                    onClick={() => navigate('choice')}
+                    className="mt-6 px-6 py-3 bg-white text-red-500 rounded hover:bg-gray-100 transition"
+                  >
+                    Powrót do menu
+                  </button>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        )}
 
       </AnimatePresence>
     </div>
