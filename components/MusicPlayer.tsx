@@ -90,7 +90,7 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ isVisible = true }) => {
             ) : (
               !hasInteracted && (
                 <p className="text-[8px] md:text-[9px] uppercase tracking-[0.2em] md:tracking-[0.4em] text-[#966F33] font-bold italic">
-                  ZATRYMAJ SIĘ NA CHWILĘ... DOTKNIJ NUTY
+                  ZATRYMAJ SIĘ NA CHWILĘ... DOTKNIJ KLUCZA WIOLINOWEGO
                 </p>
               )
             )}
