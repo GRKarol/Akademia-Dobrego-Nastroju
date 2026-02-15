@@ -62,7 +62,7 @@ const MarkdownText: React.FC<{ text: string }> = ({ text }) => {
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
       .replace(/__(.*?)__/g, '<u>$1</u>')
-      .replace(/~~(.*?)__/g, '<del>$1</del>')
+      .replace(/~~(.*?)~~/g, '<del>$1</del>')
       .replace(/`(.*?)`/g, '<code class="bg-black/5 px-1 rounded text-[#1A0F0A] font-mono text-xs">$1</code>');
   };
 
@@ -90,7 +90,6 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editInput, setEditInput] = useState('');
 
-  // Confirmation States (replacing window.confirm which is sandboxed)
   const [itemToDelete, setItemToDelete] = useState<{id: string, type: 'message' | 'event'} | null>(null);
 
   const [showPollCreator, setShowPollCreator] = useState(false);
@@ -115,101 +114,69 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
 
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-useEffect(() => {
-  const userRef = doc(db, "adn_users", code);
-  
-  // DODAJ ERROR HANDLER!
-  const unsubUser = onSnapshot(
-    userRef, 
-    (snap) => {
-      if (snap.exists()) {
-        setUser(snap.data() as AdnUser);
+  useEffect(() => {
+    const userRef = doc(db, "adn_users", code);
+    
+    const unsubUser = onSnapshot(
+      userRef, 
+      (snap) => {
+        if (snap.exists()) {
+          setUser(snap.data() as AdnUser);
+        }
+      },
+      (error) => {
+        console.error("❌ Firebase User Error:", error);
+        console.error("❌ Error code:", error.code);
+        console.error("❌ Error message:", error.message);
+        alert(`Błąd Firebase (User): ${error.message}`);
       }
-    },
-    (error) => {
-      console.error("❌ Firebase User Error:", error);
-      console.error("❌ Error code:", error.code);
-      console.error("❌ Error message:", error.message);
-      alert(`Błąd Firebase: ${error.message}`);
-    }
-  );
-
-  const qMessages = query(collection(db, "messages"), orderBy("timestamp", "asc"));
-  const unsubMessages = onSnapshot(
-    qMessages, 
-    (snap) => {
-      const msgs = snap.docs.map(d => ({ id: d.id, ...d.data() })) as Message[];
-      setMessages(msgs);
-    },
-    (error) => {
-      console.error("❌ Firebase Messages Error:", error);
-    }
-  );
-
-  const qEvents = query(collection(db, "adn_events"), orderBy("order", "asc"));
-  const unsubEvents = onSnapshot(
-    qEvents, 
-    (snap) => {
-      const evs = snap.docs.map(d => ({ id: d.id, ...d.data() })) as AdnEvent[];
-      setAdnEvents(evs);
-    },
-    (error) => {
-      console.error("❌ Firebase Events Error:", error);
-    }
-  );
-
-  const qCodes = collection(db, "access_codes");
-  const unsubCodes = onSnapshot(
-    qCodes, 
-    (snap) => {
-      setValidCodes(snap.docs.map(d => ({ id: d.id, ...d.data() })) as AccessCode[]);
-    },
-    (error) => {
-      console.error("❌ Firebase Codes Error:", error);
-    }
-  );
-
-  const qAllUsers = collection(db, "adn_users");
-  const unsubAllUsers = onSnapshot(
-    qAllUsers, 
-    (snap) => {
-      setAllUsers(snap.docs.map(d => d.data() as AdnUser));
-    },
-    (error) => {
-      console.error("❌ Firebase All Users Error:", error);
-    }
-  );
-
-  return () => {
-    unsubUser();
-    unsubMessages();
-    unsubEvents();
-    unsubCodes();
-    unsubAllUsers();
-  };
-}, [code]);
+    );
 
     const qMessages = query(collection(db, "messages"), orderBy("timestamp", "asc"));
-    const unsubMessages = onSnapshot(qMessages, (snap) => {
-      const msgs = snap.docs.map(d => ({ id: d.id, ...d.data() })) as Message[];
-      setMessages(msgs);
-    });
+    const unsubMessages = onSnapshot(
+      qMessages, 
+      (snap) => {
+        const msgs = snap.docs.map(d => ({ id: d.id, ...d.data() })) as Message[];
+        setMessages(msgs);
+      },
+      (error) => {
+        console.error("❌ Firebase Messages Error:", error);
+      }
+    );
 
     const qEvents = query(collection(db, "adn_events"), orderBy("order", "asc"));
-    const unsubEvents = onSnapshot(qEvents, (snap) => {
-      const evs = snap.docs.map(d => ({ id: d.id, ...d.data() })) as AdnEvent[];
-      setAdnEvents(evs);
-    });
+    const unsubEvents = onSnapshot(
+      qEvents, 
+      (snap) => {
+        const evs = snap.docs.map(d => ({ id: d.id, ...d.data() })) as AdnEvent[];
+        setAdnEvents(evs);
+      },
+      (error) => {
+        console.error("❌ Firebase Events Error:", error);
+      }
+    );
 
     const qCodes = collection(db, "access_codes");
-    const unsubCodes = onSnapshot(qCodes, (snap) => {
-      setValidCodes(snap.docs.map(d => ({ id: d.id, ...d.data() })) as AccessCode[]);
-    });
+    const unsubCodes = onSnapshot(
+      qCodes, 
+      (snap) => {
+        setValidCodes(snap.docs.map(d => ({ id: d.id, ...d.data() })) as AccessCode[]);
+      },
+      (error) => {
+        console.error("❌ Firebase Codes Error:", error);
+      }
+    );
 
     const qAllUsers = collection(db, "adn_users");
-    const unsubAllUsers = onSnapshot(qAllUsers, (snap) => {
-      setAllUsers(snap.docs.map(d => d.data() as AdnUser));
-    });
+    const unsubAllUsers = onSnapshot(
+      qAllUsers, 
+      (snap) => {
+        setAllUsers(snap.docs.map(d => d.data() as AdnUser));
+      },
+      (error) => {
+        console.error("❌ Firebase All Users Error:", error);
+      }
+    );
 
     return () => {
       unsubUser();
@@ -219,7 +186,7 @@ useEffect(() => {
       unsubAllUsers();
     };
   }, [code]);
-);
+
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, activeTab]);
@@ -359,13 +326,24 @@ useEffect(() => {
           <h2 className="font-serif text-3xl text-[#966F33] italic">Przedstaw się.</h2>
           <form onSubmit={async (e) => {
             e.preventDefault();
-            const snap = await getDocs(collection(db, "access_codes"));
-            const codes = snap.docs.map(d => d.data() as AccessCode);
-            const found = codes.find(c => c.value === code);
-            const isAdmin = found?.role === 'admin';
-            const newUser = { firstName, lastName, code, isAdmin };
-            await setDoc(doc(db, "adn_users", code), newUser);
-            setUser(newUser);
+            try {
+              const snap = await getDocs(collection(db, "access_codes"));
+              const codes = snap.docs.map(d => d.data() as AccessCode);
+              const found = codes.find(c => c.value === code);
+              
+              if (!found) {
+                alert("❌ Nieprawidłowy kod dostępu!");
+                return;
+              }
+              
+              const isAdmin = found?.role === 'admin';
+              const newUser = { firstName, lastName, code, isAdmin };
+              await setDoc(doc(db, "adn_users", code), newUser);
+              setUser(newUser);
+            } catch (error: any) {
+              console.error("❌ Błąd logowania:", error);
+              alert(`❌ Błąd: ${error.message}`);
+            }
           }} className="space-y-6">
             <input type="text" placeholder="Imię" value={firstName} onChange={e => setFirstName(e.target.value)} className="w-full bg-transparent border-b border-[#2C1810]/20 py-3 text-[#2C1810] outline-none focus:border-[#966F33]" required />
             <input type="text" placeholder="Nazwisko" value={lastName} onChange={e => setLastName(e.target.value)} className="w-full bg-transparent border-b border-[#2C1810]/20 py-3 text-[#2C1810] outline-none focus:border-[#966F33]" required />
@@ -379,7 +357,6 @@ useEffect(() => {
   return (
     <div className="fixed inset-0 z-[200] bg-[#EADDCA] flex flex-col md:flex-row overflow-hidden w-full h-full text-[#1A0F0A]">
       
-      {/* CUSTOM CONFIRMATION MODAL (Bypassing Sandboxed window.confirm) */}
       <AnimatePresence>
         {itemToDelete && (
           <motion.div 
@@ -402,7 +379,6 @@ useEffect(() => {
         )}
       </AnimatePresence>
 
-      {/* SIDEBAR */}
       <div className="w-full md:w-64 bg-[#F5F2EB] border-b md:border-b-0 md:border-r border-[#1A0F0A]/10 flex md:flex-col justify-between shrink-0 shadow-sm">
         <div className="flex md:flex-col items-center md:items-stretch w-full">
           <div className="hidden md:block p-6 text-center border-b border-[#1A0F0A]/5">
@@ -444,7 +420,6 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* MAIN CONTENT AREA */}
       <div className="flex-1 flex flex-col relative bg-[#FDFBF7] overflow-hidden">
         {activeTab === 'management' && user.isAdmin ? (
           <div className="flex-1 flex flex-col overflow-hidden">
@@ -455,7 +430,6 @@ useEffect(() => {
             </div>
             
             <div className="flex-1 overflow-y-auto p-4 md:p-10 no-scrollbar relative bg-[#FDFBF7]">
-               {/* MODAL KREATORA WYDARZEŃ */}
                <AnimatePresence>
                  {showEventCreator && (
                    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="fixed inset-0 z-[150] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
@@ -588,7 +562,6 @@ useEffect(() => {
             </div>
           </div>
         ) : (
-          /* VIEW: CHAT & ANNOUNCEMENTS */
           <div className="flex-1 flex flex-col overflow-hidden bg-[#F5F2EB]">
             <div className="flex-1 overflow-y-auto p-4 md:p-10 space-y-8 no-scrollbar overflow-x-hidden relative bg-[#FAF0E6]">
               <div className="max-w-4xl mx-auto space-y-8">
@@ -671,7 +644,6 @@ useEffect(() => {
               </div>
             </div>
 
-            {/* MESSAGE INPUT AREA */}
             {activeTab === 'chat' && (
               <div className="p-4 md:p-8 bg-white border-t border-[#1A0F0A]/10 relative shadow-2xl">
                 <AnimatePresence>
