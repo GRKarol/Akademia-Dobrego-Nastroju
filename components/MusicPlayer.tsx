@@ -113,7 +113,7 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ isVisible = true }) => {
                 ))}
               </div>
             ) : (
-              <span className="text-xl md:text-2xl">𝄞</span>
+              <span className="text-base md:text-2xl">𝄞</span>
             )}
           </motion.button>
         </motion.div>
