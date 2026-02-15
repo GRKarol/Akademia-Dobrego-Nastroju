@@ -9,43 +9,45 @@ interface NarrativeGalleryProps {
 }
 
 const items = [
-  {
-    type: 'genesis',
-    id: 'gen1',
-    title: "Zaczęło się od zmęczenia jazdą.",
-    img: "budynek.jpg",
-    bg: '#F5F2EB', 
-    content: (
-      <div className="space-y-4 md:space-y-6 text-lg sm:text-xl md:text-2xl font-light leading-relaxed text-[#1A0F0A] text-center max-w-5xl mx-auto px-4 italic">
-        <p>Dwoje muzyków, którzy spędzali życie w drodze do sal prób, koncertów, spotkań, pomyśleli: a gdyby tak przenieść muzykę bliżej?</p>
-        <p>Zbudowali ten budynek, żeby nie musieć jeździć, ale szybko zrozumieli, że nie tylko chodzi o muzykę. To o przestrzeń dla ludzi, którzy myślą głębiej. Dla tych, którzy czują, że dzisiejszy świat ogłupia, ale se nie poddają – szukają, tworzą, rozmawiają.</p>
-        <div className="pt-4">
-          <div className="px-8 py-5 md:px-12 md:py-8 bg-[#8B4513]/5 border border-[#8B4513]/10 rounded-sm shadow-sm inline-block">
-            <p className="text-[#1A0F0A] font-bold not-italic text-sm md:text-xl lg:text-2xl uppercase tracking-tight">Akademia Dobrego Nastroju to pierwsze takie miejsce, gdzie ośrodek kultury dla masy jest przeciwieństwem.</p>
-          </div>
+ {
+  type: 'genesis',
+  id: 'gen1',
+  title: "Zaczęło się od zmęczenia jazdą.",
+  img: "budynek.jpg",
+  bg: '#F5F2EB', 
+  content: (
+    <div className="space-y-3 md:space-y-6 text-sm sm:text-base md:text-xl lg:text-2xl font-light leading-relaxed text-[#1A0F0A] text-center max-w-5xl mx-auto px-4 italic">
+      <p>Dwoje muzyków, którzy spędzali życie w drodze do sal prób, koncertów, spotkań, pomyśleli: a gdyby tak przenieść muzykę bliżej?</p>
+      <p>Zbudowali ten budynek, żeby nie musieć jeździć, ale szybko zrozumieli, że nie tylko chodzi o muzykę. To o przestrzeń dla ludzi, którzy myślą głębiej. Dla tych, którzy czują, że dzisiejszy świat ogłupia, ale se nie poddają – szukają, tworzą, rozmawiają.</p>
+      <div className="pt-3 md:pt-4">
+        <div className="px-6 py-4 md:px-12 md:py-8 bg-[#8B4513]/5 border border-[#8B4513]/10 rounded-sm shadow-sm inline-block">
+          <p className="text-[#1A0F0A] font-bold not-italic text-xs sm:text-sm md:text-xl lg:text-2xl uppercase tracking-tight">Akademia Dobrego Nastroju to pierwsze takie miejsce, gdzie ośrodek kultury dla masy jest przeciwieństwem.</p>
         </div>
       </div>
-    )
-  },
+    </div>
+  )
+},
+
   {
-    type: 'genesis',
-    id: 'gen2',
-    title: "Jądro świadomej wspólnoty.",
-    img: "kawiarnia.jpg",
-    bg: '#EADDCA', 
-    content: (
-      <div className="space-y-4 md:space-y-6 text-lg sm:text-xl md:text-2xl font-light leading-relaxed text-[#1A0F0A] text-center max-w-5xl mx-auto px-4">
-        <p className="text-[#8B4513] font-serif italic text-2xl md:text-3xl lg:text-4xl py-2 md:py-4 drop-shadow-sm font-bold leading-tight">
-          Jesteśmy jądrem, które łączy elity – nie w sensie snobistycznym, ale w sensie ludzi świadomych, pracowitych, pełnych wiedzy i inteligencji życiowej.
-        </p>
-        <p className="text-xl md:text-2xl lg:text-3xl opacity-90 leading-relaxed font-medium">
-          Ludzi, którzy chcą współpracować, tworzyć wspólnotę opartą na szacunku, pomysłowości i zaangażowaniu. Nie spieszymy się. Nie szukamy liczb. Szukamy jednostek, które czują klimat tego miejsca – i chcą być jego częścią.
-        </p>
-      </div>
-    ),
-    hasButton: true,
-    buttonText: "Wejdź do środka"
-  },
+  type: 'genesis',
+  id: 'gen2',
+  title: "Jądro świadomej wspólnoty.",
+  img: "kawiarnia.jpg",
+  bg: '#EADDCA', 
+  content: (
+    <div className="space-y-3 md:space-y-6 text-sm sm:text-base md:text-2xl font-light leading-relaxed text-[#1A0F0A] text-center max-w-5xl mx-auto px-4">
+      <p className="text-[#8B4513] font-serif italic text-lg sm:text-xl md:text-3xl lg:text-4xl py-2 md:py-4 drop-shadow-sm font-bold leading-tight">
+        Jesteśmy jądrem, które łączy elity – nie w sensie snobistycznym, ale w sensie ludzi świadomych, pracowitych, pełnych wiedzy i inteligencji życiowej.
+      </p>
+      <p className="text-base sm:text-lg md:text-2xl lg:text-3xl opacity-90 leading-relaxed font-medium">
+        Ludzi, którzy chcą współpracować, tworzyć wspólnotę opartą na szacunku, pomysłowości i zaangażowaniu. Nie spieszymy się. Nie szukamy liczb. Szukamy jednostek, które czują klimat tego miejsca – i chcą być jego częścią.
+      </p>
+    </div>
+  ),
+  hasButton: true,
+  buttonText: "Wejdź do środka"
+},
+
   {
     type: 'image',
     title: "Wejście – próg do innego świata",
