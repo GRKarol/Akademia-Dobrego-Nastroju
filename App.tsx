@@ -77,7 +77,7 @@ const handleJoinClub = (code: string) => {
       <CustomCursor />
       <MusicPlayer isVisible={view !== 'story' || currentSlideType === 'image'} />
 
-      <AnimatePresence mode="wait">
+     <AnimatePresence mode="sync">
         {view === 'landing' && (
           <motion.div
             key="view-landing"
