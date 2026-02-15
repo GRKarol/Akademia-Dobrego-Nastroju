@@ -176,17 +176,34 @@ const handleJoinClub = (code: string) => {
            </motion.div>
         )}
 
-        {view === 'club' && activeCode && (
-          <motion.div 
-            key="view-club" 
-            initial={{ opacity: 0, scale: 1.1, filter: 'blur(20px)' }} 
-            animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }} 
-            exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ duration: 0.8 }}
-          >
-            <ClubRoom code={activeCode} onExit={() => navigate('choice')} />
-          </motion.div>
-        )}
+{console.log("🟣 Render check - view:", view, "activeCode:", activeCode)}
+
+{view === 'club' && activeCode ? (
+  <>
+    {console.log("🟢 RENDERUJĘ ClubRoom z kodem:", activeCode)}
+    <motion.div 
+      key="view-club" 
+      initial={{ opacity: 0, scale: 1.1, filter: 'blur(20px)' }} 
+      animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }} 
+      exit={{ opacity: 0, scale: 0.9 }}
+      transition={{ duration: 0.8 }}
+    >
+      <ClubRoom code={activeCode} onExit={() => navigate('choice')} />
+    </motion.div>
+  </>
+) : view === 'club' && !activeCode ? (
+  <>
+    {console.log("🔴 NIE RENDERUJĘ - brak activeCode! view:", view)}
+    <div className="fixed inset-0 z-[200] bg-red-500 flex items-center justify-center text-white text-2xl">
+      <div className="text-center">
+        <p className="mb-4">❌ BŁĄD: Brak activeCode</p>
+        <p className="text-sm">view: {view}</p>
+        <p className="text-sm">activeCode: {String(activeCode)}</p>
+      </div>
+    </div>
+  </>
+) : null}
+
       </AnimatePresence>
     </div>
   );
