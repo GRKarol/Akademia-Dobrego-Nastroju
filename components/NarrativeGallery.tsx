@@ -18,7 +18,7 @@ const items = [
   content: (
     <div className="space-y-3 md:space-y-6 text-sm sm:text-base md:text-xl lg:text-2xl font-light leading-relaxed text-[#1A0F0A] text-center max-w-5xl mx-auto px-4 italic">
       <p>Dwoje muzyków, którzy spędzali życie w drodze do sal prób, koncertów, spotkań, pomyśleli: a gdyby tak przenieść muzykę bliżej?</p>
-      <p>Zbudowali ten budynek, żeby nie musieć jeździć, ale szybko zrozumieli, że nie tylko chodzi o muzykę. To o przestrzeń dla ludzi, którzy myślą głębiej. Dla tych, którzy czują, że dzisiejszy świat ogłupia, ale se nie poddają – szukają, tworzą, rozmawiają.</p>
+      <p>Zbudowali ten budynek, żeby nie musieć jeździć, ale szybko zrozumieli, że nie chodzi tylko o wygodę, nie chodzi tylko o muzykę. To o przestrzeń dla ludzi, którzy myślą głębiej. Dla tych, którzy czują, że dzisiejszy świat ogłupia, ale podejmują przeciw temu działanie – tworzą, rozmawiają, zmieniają negatywy tego świata w ich mocne strony.</p>
       <div className="pt-3 md:pt-4">
         <div className="px-6 py-4 md:px-12 md:py-8 bg-[#8B4513]/5 border border-[#8B4513]/10 rounded-sm shadow-sm inline-block">
           <p className="text-[#1A0F0A] font-bold not-italic text-xs sm:text-sm md:text-xl lg:text-2xl uppercase tracking-tight">Akademia Dobrego Nastroju to pierwsze takie miejsce, gdzie w ośrodku kultury nie liczy się ilość, a jakość.</p>
