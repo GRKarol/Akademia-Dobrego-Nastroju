@@ -47,10 +47,19 @@ const App: React.FC = () => {
     }
   }, [view, isGuided]);
 
-  const handleJoinClub = (code: string) => {
-    setActiveCode(code);
-    setView('club');
-  };
+const handleJoinClub = (code: string) => {
+  console.log("🔵 handleJoinClub wywołany!");
+  console.log("🔵 Otrzymany kod:", code);
+  console.log("🔵 Typ kodu:", typeof code);
+  console.log("🔵 Długość kodu:", code?.length);
+  
+  setActiveCode(code);
+  console.log("🔵 activeCode ustawiony na:", code);
+  
+  setView('club');
+  console.log("🔵 view zmieniony na: club");
+};
+
 
   const handleReturnToMenuFromScroll = () => {
     setIsGuided(true);
