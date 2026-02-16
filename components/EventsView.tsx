@@ -162,10 +162,10 @@ const archivedEvents = adnEvents.filter(e =>
                       <h3 className="font-serif text-4xl md:text-7xl leading-tight text-[#2C1810] italic font-bold uppercase">{activeEvents[activeIndex].title}</h3>
                       <div className="text-[#2C1810]/60 font-light text-base md:text-lg leading-relaxed whitespace-pre-wrap">{activeEvents[activeIndex].description}</div>
                       <div className="pt-8 flex flex-wrap gap-8 border-t border-[#2C1810]/10">
-                        <div className="flex items-center space-x-3 group/info">
-                          <Calendar size={20} className="text-[#966F33]" />
-                          <span className="font-serif italic text-sm md:text-lg text-[#2C1810]/80">Let's goo</span>
-                        </div>
+                       <div className="flex items-center space-x-3 group/info">
+  <Calendar size={20} className="text-[#966F33]" />
+  <span className="font-serif italic text-sm md:text-lg text-[#2C1810]/80">{activeEvents[activeIndex].date}</span>
+</div>
                         <div className="flex items-center space-x-3 group/info">
                           <MapPin size={20} className="text-[#966F33]" />
                           <span className="font-serif italic text-sm md:text-lg text-[#2C1810]/80">{activeEvents[activeIndex].location}</span>
