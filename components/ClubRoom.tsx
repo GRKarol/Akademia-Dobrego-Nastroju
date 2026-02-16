@@ -112,6 +112,13 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
   const [editUserLastName, setEditUserLastName] = useState('');
   const [isCreatingEvent, setIsCreatingEvent] = useState(false);
 
+  // ✅ NOWE STANY DLA EDYCJI WYDARZEŃ
+  const [editingEventId, setEditingEventId] = useState<string | null>(null);
+  const [editEventTitle, setEditEventTitle] = useState('');
+  const [editEventDesc, setEditEventDesc] = useState('');
+  const [editEventDate, setEditEventDate] = useState('');
+  const [editEventImage, setEditEventImage] = useState<string | null>(null);
+
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -309,6 +316,31 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
     }
   };
 
+  // ✅ NOWA FUNKCJA - AKTUALIZACJA WYDARZENIA
+  const updateAdnEvent = async (eventId: string) => {
+    if (!editEventTitle || !editEventDesc) return;
+    
+    try {
+      const eventRef = doc(db, "adn_events", eventId);
+      await updateDoc(eventRef, {
+        title: editEventTitle,
+        description: editEventDesc,
+        date: editEventDate || "Wkrótce w Akademii",
+        image: editEventImage || null
+      });
+      
+      // Reset
+      setEditingEventId(null);
+      setEditEventTitle('');
+      setEditEventDesc('');
+      setEditEventDate('');
+      setEditEventImage(null);
+    } catch (e) {
+      console.error("Błąd aktualizacji:", e);
+      alert("Nie udało się zaktualizować wydarzenia.");
+    }
+  };
+
   const handleUpdateUserName = async (targetCode: string) => {
     if (!editUserFirstName.trim() || !editUserLastName.trim()) return;
     const userRef = doc(db, "adn_users", targetCode);
@@ -465,6 +497,89 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
                      </div>
                    </motion.div>
                  )}
+
+                 {/* ✅ NOWY MODAL - EDYCJA WYDARZENIA */}
+                 {editingEventId && (
+                   <motion.div 
+                     initial={{ opacity: 0, scale: 0.95 }} 
+                     animate={{ opacity: 1, scale: 1 }} 
+                     exit={{ opacity: 0, scale: 0.95 }} 
+                     className="fixed inset-0 z-[150] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4"
+                   >
+                     <div className="bg-white w-full max-w-2xl p-8 rounded-sm shadow-2xl space-y-6">
+                       <div className="flex justify-between items-center border-b border-[#1A0F0A]/5 pb-4">
+                         <h3 className="font-serif italic text-2xl text-[#1A0F0A]">Edytuj Wydarzenie</h3>
+                         <button 
+                           onClick={() => setEditingEventId(null)} 
+                           className="text-[#1A0F0A]/40 hover:text-[#1A0F0A] transition-colors"
+                         >
+                           <X size={24}/>
+                         </button>
+                       </div>
+                       
+                       <div className="grid gap-6">
+                         <input 
+                           value={editEventTitle} 
+                           onChange={e => setEditEventTitle(e.target.value)} 
+                           placeholder="Tytuł wydarzenia..." 
+                           className="w-full bg-[#FAF9F6] border border-[#1A0F0A]/10 p-4 font-serif italic text-lg outline-none focus:border-[#1A0F0A]/30 rounded-sm text-[#1A0F0A]" 
+                         />
+                         
+                         <textarea 
+                           value={editEventDesc} 
+                           onChange={e => setEditEventDesc(e.target.value)} 
+                           placeholder="Opis wydarzenia..." 
+                           className="w-full bg-[#FAF9F6] border border-[#1A0F0A]/10 p-4 text-sm outline-none focus:border-[#1A0F0A]/30 rounded-sm min-h-[150px] text-[#1A0F0A]" 
+                         />
+                         
+                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                           <div className="space-y-1">
+                             <label className="text-[10px] uppercase tracking-widest text-[#1A0F0A]/40 font-bold ml-1">Data</label>
+                             <input 
+                               value={editEventDate} 
+                               onChange={e => setEditEventDate(e.target.value)} 
+                               placeholder="np. 12 marca, 19:00" 
+                               className="w-full bg-[#FAF9F6] border border-[#1A0F0A]/10 p-3 text-sm rounded-sm outline-none text-[#1A0F0A]" 
+                             />
+                           </div>
+                           
+                           <div className="space-y-1">
+                             <label className="text-[10px] uppercase tracking-widest text-[#1A0F0A]/40 font-bold ml-1">Zdjęcie (opcjonalnie)</label>
+                             <label className="w-full h-[46px] border border-[#1A0F0A]/10 flex items-center justify-center cursor-pointer hover:bg-black/5 transition-all rounded-sm text-[10px] uppercase font-bold text-[#1A0F0A]">
+                               {editEventImage ? "Zmień zdjęcie ✓" : "Wybierz plik"}
+                               <input 
+                                 type="file" 
+                                 className="hidden" 
+                                 accept="image/*" 
+                                 onChange={async (e) => {
+                                   const file = e.target.files?.[0];
+                                   if (file) {
+                                     setIsProcessingImage(true);
+                                     const reader = new FileReader();
+                                     reader.onloadend = async () => {
+                                       const compressed = await compressImage(reader.result as string);
+                                       setEditEventImage(compressed);
+                                       setIsProcessingImage(false);
+                                     };
+                                     reader.readAsDataURL(file);
+                                   }
+                                 }} 
+                               />
+                             </label>
+                           </div>
+                         </div>
+                       </div>
+                       
+                       <button 
+                         onClick={() => updateAdnEvent(editingEventId)} 
+                         className="w-full py-4 bg-[#1A0F0A] text-white font-serif italic text-xl rounded-sm hover:bg-[#331c12] transition-all shadow-xl flex items-center justify-center space-x-2"
+                       >
+                         <Save size={24} />
+                         <span>Zapisz Zmiany</span>
+                       </button>
+                     </div>
+                   </motion.div>
+                 )}
                </AnimatePresence>
 
                <div className="max-w-4xl mx-auto space-y-8">
@@ -487,7 +602,34 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
                               </div>
                             </div>
                             <div className="flex items-center gap-2 shrink-0">
-                              <button onClick={async ()=>{ if(i > 0) { const prev = adnEvents[i-1]; await updateDoc(doc(db, "adn_events", ev.id), { order: i - 1 }); await updateDoc(doc(db, "adn_events", prev.id), { order: i }); } }} className="p-2 text-[#1A0F0A]/20 hover:text-[#1A0F0A] transition-colors"><ArrowUp size={16}/></button>
+                              <button 
+                                onClick={async ()=>{ 
+                                  if(i > 0) { 
+                                    const prev = adnEvents[i-1]; 
+                                    await updateDoc(doc(db, "adn_events", ev.id), { order: i - 1 }); 
+                                    await updateDoc(doc(db, "adn_events", prev.id), { order: i }); 
+                                  } 
+                                }} 
+                                className="p-2 text-[#1A0F0A]/20 hover:text-[#1A0F0A] transition-colors"
+                              >
+                                <ArrowUp size={16}/>
+                              </button>
+                              
+                              {/* ✅ NOWY PRZYCISK EDYCJI */}
+                              <button 
+                                onClick={() => {
+                                  setEditingEventId(ev.id);
+                                  setEditEventTitle(ev.title);
+                                  setEditEventDesc(ev.description);
+                                  setEditEventDate(ev.date);
+                                  setEditEventImage(ev.image || null);
+                                }} 
+                                className="p-2 text-[#1A0F0A]/20 hover:text-blue-600 hover:bg-blue-50 rounded-sm transition-all"
+                                title="Edytuj wydarzenie"
+                              >
+                                <Edit2 size={16}/>
+                              </button>
+                              
                               <button 
                                 onClick={() => setItemToDelete({id: ev.id, type: 'event'})} 
                                 className="p-2 text-[#1A0F0A]/20 hover:text-red-600 hover:bg-red-50 rounded-sm transition-all"
