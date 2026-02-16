@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Phone, Mail, ArrowLeft, Loader2, ExternalLink, MapPin, Facebook, ArrowRight, Sparkles } from 'lucide-react';
+import { Phone, Mail, ArrowLeft, Loader2, ExternalLink, MapPin, Facebook, ArrowRight, Sparkles, Check } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { collection, getDocs } from 'firebase/firestore';
 
@@ -19,6 +19,7 @@ const ContactInvitation: React.FC<ContactInvitationProps> = ({ onBack, onJoinClu
   const [code, setCode] = useState('');
   const [error, setError] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -76,6 +77,27 @@ const ContactInvitation: React.FC<ContactInvitationProps> = ({ onBack, onJoinClu
       setError(true);
     } finally {
       setIsValidating(false);
+    }
+  };
+
+  const handleCopyEmail = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    try {
+      await navigator.clipboard.writeText('akademiadobregonastroju@gmail.com');
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      console.error('Błąd kopiowania:', err);
+      // Fallback - zaznacz tekst do manualnego kopiowania
+      const emailText = document.querySelector('a[href^="mailto:akademiadobregonastroju"]');
+      if (emailText) {
+        const range = document.createRange();
+        range.selectNode(emailText);
+        window.getSelection()?.removeAllRanges();
+        window.getSelection()?.addRange(range);
+      }
     }
   };
 
@@ -153,49 +175,29 @@ const ContactInvitation: React.FC<ContactInvitationProps> = ({ onBack, onJoinClu
                 <div className="flex items-center gap-3">
                   {/* EMAIL - klikalne */}
                   <a 
-                    href="mailto:akademiadobregonastroju@gmail.com?subject=Kontakt+ze+strony+Akademii"
+                    href="mailto:akademiadobregonastroju@gmail.com?subject=Kontakt+ze+strony+Akademii&body=Dzień+dobry,%0D%0A%0D%0A"
                     className="text-xs sm:text-sm md:text-base lg:text-lg font-serif text-[#121212] block break-all leading-snug hover:text-[#8B4513] transition-colors flex-1"
                   >
                     akademiadobregonastroju@gmail.com
                   </a>
                   
                   {/* PRZYCISK KOPIUJ */}
-            <button
-  onClick={(e) => {
-    e.preventDefault();
-    navigator.clipboard.writeText('akademiadobregonastroju@gmail.com')
-      .then(() => {
-        // Zmiana ikony na checkmark
-        const btn = e.currentTarget;
-        const originalHTML = btn.innerHTML;
-        btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
-        btn.classList.add('text-green-600');
-        setTimeout(() => {
-          btn.innerHTML = originalHTML;
-          btn.classList.remove('text-green-600');
-        }, 2000);
-      })
-      .catch((err) => {
-        // Tylko pokazuj alert gdy NAPRAWDĘ się nie udało
-        console.error('Błąd kopiowania:', err);
-        // Fallback - zaznacz tekst do ręcznego skopiowania
-        const emailText = document.querySelector('a[href^="mailto:akademiadobregonastroju"]');
-        if (emailText) {
-          const range = document.createRange();
-          range.selectNode(emailText);
-          window.getSelection()?.removeAllRanges();
-          window.getSelection()?.addRange(range);
-        }
-      });
-  }}
-  className="flex-shrink-0 p-2 text-[#8B4513]/40 hover:text-[#8B4513] hover:bg-[#8B4513]/5 rounded-sm transition-all"
-  title="Kopiuj adres email"
->
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" strokeWidth="2"></rect>
-    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" strokeWidth="2"></path>
-  </svg>
-</button>
+                  <button
+                    onClick={handleCopyEmail}
+                    className="flex-shrink-0 p-2 text-[#8B4513]/40 hover:text-[#8B4513] hover:bg-[#8B4513]/5 rounded-sm transition-all"
+                    title="Kopiuj adres email"
+                  >
+                    {isCopied ? (
+                      <Check size={16} className="text-green-600" />
+                    ) : (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" strokeWidth="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" strokeWidth="2"></path>
+                      </svg>
+                    )}
+                  </button>
+                </div>
+
                 {/* Podpowiedź dla desktop */}
                 <span className="hidden md:block text-[9px] text-[#121212]/30 italic mt-1">
                   Kliknij ikonę aby skopiować adres
