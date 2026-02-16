@@ -344,18 +344,27 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
     }
   };
 
-  // ✅ NOWA FUNKCJA - PRZENIEŚ DO ARCHIWUM
-  const toggleArchiveEvent = async (eventId: string, currentStatus: boolean) => {
-    try {
-      const eventRef = doc(db, "adn_events", eventId);
+const toggleArchiveEvent = async (eventId: string, currentStatus: boolean) => {
+  try {
+    const eventRef = doc(db, "adn_events", eventId);
+    
+    // ✅ Jeśli PRZYWRACAMY z archiwum (currentStatus === true)
+    if (currentStatus) {
       await updateDoc(eventRef, {
-        isArchived: !currentStatus
+        isArchived: false,
+        timestamp: Date.now()  // ← RESETUJ CZAS!
       });
-    } catch (e) {
-      console.error("Błąd archiwizacji:", e);
-      alert("Nie udało się zmienić statusu archiwum.");
+    } else {
+      // Jeśli ARCHIWIZUJEMY, NIE zmieniaj timestamp
+      await updateDoc(eventRef, {
+        isArchived: true
+      });
     }
-  };
+  } catch (e) {
+    console.error("Błąd archiwizacji:", e);
+    alert("Nie udało się zmienić statusu archiwum.");
+  }
+};
 
   const handleUpdateUserName = async (targetCode: string) => {
     if (!editUserFirstName.trim() || !editUserLastName.trim()) return;
