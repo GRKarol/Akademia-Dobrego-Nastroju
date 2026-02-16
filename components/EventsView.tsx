@@ -225,32 +225,44 @@ const archivedEvents = adnEvents.filter(e =>
             <div className="max-h-[600px] overflow-y-auto custom-scrollbar p-6 md:p-10 bg-white">
               {archivedEvents.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-                  {archivedEvents.map((ev, i) => (
-                    <motion.div 
-                      key={ev.id} 
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.05 }}
-                      className="group bg-[#FAF9F6] border border-[#8B4513]/10 p-8 rounded-sm hover:border-[#966F33]/40 hover:shadow-xl transition-all duration-500 relative overflow-hidden"
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-br from-[#966F33]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                      
-                      <div className="relative z-10">
-                        <div className="flex justify-between items-start mb-6">
-                          <p className="text-[#966F33]/60 text-[9px] uppercase tracking-widest font-bold border-l-2 border-[#966F33]/30 pl-3">{ev.date}</p>
-                          <History size={14} className="text-[#2C1810]/10 group-hover:text-[#966F33]/40 transition-colors" />
-                        </div>
-                        
-                        <h4 className="font-serif text-2xl text-[#2C1810]/80 italic mb-4 group-hover:text-[#2C1810] transition-colors uppercase font-bold">{ev.title}</h4>
-                        <p className="text-[#2C1810]/40 text-sm font-light leading-relaxed line-clamp-3 italic group-hover:text-[#2C1810]/70 transition-colors">{ev.description}</p>
-                        
-                        <div className="mt-8 flex items-center space-x-4 opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0 duration-500">
-                          <div className="h-px flex-1 bg-[#2C1810]/10" />
-                          <span className="text-[8px] uppercase tracking-[0.3em] text-[#966F33]/50">Zapis archiwalny</span>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
+        {archivedEvents.map((ev, i) => (
+  <motion.div 
+    key={ev.id} 
+    initial={{ opacity: 0, y: 20 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    transition={{ delay: i * 0.05 }}
+    className="group bg-[#FAF9F6] border border-[#8B4513]/10 rounded-sm hover:border-[#966F33]/40 hover:shadow-xl transition-all duration-500 relative overflow-hidden"
+  >
+    <div className="absolute inset-0 bg-gradient-to-br from-[#966F33]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+    
+    {/* ✅ NOWA SEKCJA ZDJĘĆ */}
+    {ev.image && (
+      <div className="relative w-full h-48 overflow-hidden">
+        <img 
+          src={ev.image} 
+          alt={ev.title}
+          className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-700"
+        />
+      </div>
+    )}
+    
+    <div className="relative z-10 p-8">
+      <div className="flex justify-between items-start mb-6">
+        <p className="text-[#966F33]/60 text-[9px] uppercase tracking-widest font-bold border-l-2 border-[#966F33]/30 pl-3">{ev.date}</p>
+        <History size={14} className="text-[#2C1810]/10 group-hover:text-[#966F33]/40 transition-colors" />
+      </div>
+      
+      <h4 className="font-serif text-2xl text-[#2C1810]/80 italic mb-4 group-hover:text-[#2C1810] transition-colors uppercase font-bold">{ev.title}</h4>
+      <p className="text-[#2C1810]/40 text-sm font-light leading-relaxed line-clamp-3 italic group-hover:text-[#2C1810]/70 transition-colors">{ev.description}</p>
+      
+      <div className="mt-8 flex items-center space-x-4 opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0 duration-500">
+        <div className="h-px flex-1 bg-[#2C1810]/10" />
+        <span className="text-[8px] uppercase tracking-[0.3em] text-[#966F33]/50">Zapis archiwalny</span>
+      </div>
+    </div>
+  </motion.div>
+))}
+
                 </div>
               ) : (
                 <div className="w-full py-32 flex flex-col items-center justify-center text-center space-y-4 opacity-20">
