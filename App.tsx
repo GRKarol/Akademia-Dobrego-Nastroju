@@ -166,7 +166,8 @@ const handleGoToEvents = () => {
             <ContactInvitation 
               onBack={() => navigate('choice')} 
               onJoinClub={handleJoinClub} 
-              onGoToEvents={handleReturnToMenuFromScroll} 
+              onGoToEvents={handleGoToEvents}                     
+              onScrollToBottom={handleReturnToMenuFromScroll}  
             />
           </motion.div>
         )}
