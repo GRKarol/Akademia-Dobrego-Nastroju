@@ -65,6 +65,11 @@ const App: React.FC = () => {
     setView('choice');
   };
 
+const handleGoToEvents = () => {
+  setIsGuided(false);
+  setView('events');
+};
+
   const navigate = (newView: ViewState) => {
     if (isInteractionBlocked) return;
     setIsGuided(false);
