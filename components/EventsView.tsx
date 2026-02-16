@@ -45,11 +45,18 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
     return () => unsub();
   }, []);
 
-  const FOUR_WEEKS_MS = 2419200000;
-  const now = Date.now();
+const FOUR_WEEKS_MS = 2419200000;
+const now = Date.now();
 
-  const activeEvents = adnEvents.filter(e => (now - e.timestamp < FOUR_WEEKS_MS));
-  const archivedEvents = adnEvents.filter(e => (now - e.timestamp >= FOUR_WEEKS_MS));
+// ✅ Aktywne: NIE zarchiwizowane ORAZ młodsze niż 4 tygodnie
+const activeEvents = adnEvents.filter(e => 
+  !e.isArchived && (now - e.timestamp < FOUR_WEEKS_MS)
+);
+
+// ✅ Archiwalne: zarchiwizowane ALBO starsze niż 4 tygodnie
+const archivedEvents = adnEvents.filter(e => 
+  e.isArchived || (now - e.timestamp >= FOUR_WEEKS_MS)
+);
 
   const nextEvent = () => {
     setDirection(1);
