@@ -23,30 +23,30 @@ const ContactInvitation: React.FC<ContactInvitationProps> = ({ onBack, onJoinClu
   const [isCopied, setIsCopied] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!onGoToEvents) return;
+useEffect(() => {
+  if (!onScrollToBottom) return; 
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          const timer = setTimeout(() => {
-            onGoToEvents();
-          }, 400);
-          return () => clearTimeout(timer);
-        }
-      },
-      { 
-        threshold: 0.05,
-        rootMargin: '0px 0px 200px 0px' 
+  const observer = new IntersectionObserver(
+    (entries) => {
+      if (entries[0].isIntersecting) {
+        const timer = setTimeout(() => {
+          onScrollToBottom(); 
+        }, 400);
+        return () => clearTimeout(timer);
       }
-    );
-
-    if (bottomRef.current) {
-      observer.observe(bottomRef.current);
+    },
+    { 
+      threshold: 0.05,
+      rootMargin: '0px 0px 200px 0px' 
     }
+  );
 
-    return () => observer.disconnect();
-  }, [onGoToEvents]);
+  if (bottomRef.current) {
+    observer.observe(bottomRef.current);
+  }
+
+  return () => observer.disconnect();
+}, [onScrollToBottom]); 
 
   const handleCodeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
