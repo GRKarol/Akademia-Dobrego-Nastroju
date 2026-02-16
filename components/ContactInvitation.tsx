@@ -140,7 +140,14 @@ const ContactInvitation: React.FC<ContactInvitationProps> = ({ onBack, onJoinClu
                 <span className="text-2xl md:text-3xl font-serif text-[#121212]">502 105 729</span>
               </div>
             </a>
-
+<div className="flex items-start space-x-4 md:space-x-6 group">
+  <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center border border-[#8B4513]/20 rounded-full text-[#8B4513] group-hover:bg-[#8B4513] group-hover:text-white transition-all">
+    <Mail size={20} strokeWidth={1.5} />
+  </div>
+  <div className="flex-1 min-w-0">
+    <span className="block text-[10px] uppercase tracking-widest text-[#121212]/40 mb-1 font-bold">Napisz wiadomość</span>
+    
+    <div className="flex items-center gap-3">
         <a 
   href="mailto:akademiadobregonastroju@gmail.com?subject=Dzień dobry, %0D%0A%0D%0A" 
   className="flex items-start space-x-4 md:space-x-6 group"
@@ -155,7 +162,40 @@ const ContactInvitation: React.FC<ContactInvitationProps> = ({ onBack, onJoinClu
     </span>
   </div>
 </a>
-
+ {/* PRZYCISK KOPIUJ - dla komputerów */}
+      <button
+        onClick={(e) => {
+          e.preventDefault();
+          navigator.clipboard.writeText('akademiadobregonastroju@gmail.com').then(() => {
+            // Pokaż powiadomienie
+            const btn = e.currentTarget;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+            btn.classList.add('text-green-600');
+            setTimeout(() => {
+              btn.innerHTML = originalText;
+              btn.classList.remove('text-green-600');
+            }, 2000);
+          }).catch(() => {
+            alert('Nie udało się skopiować. Adres: akademiadobregonastroju@gmail.com');
+          });
+        }}
+        className="flex-shrink-0 p-2 text-[#8B4513]/40 hover:text-[#8B4513] hover:bg-[#8B4513]/5 rounded-sm transition-all group/copy"
+        title="Kopiuj adres email"
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2" strokeWidth="2"></rect>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" strokeWidth="2"></path>
+        </svg>
+      </button>
+    </div>
+    
+    {/* Podpowiedź dla użytkowników desktop */}
+    <span className="hidden md:block text-[9px] text-[#121212]/30 italic mt-1">
+      Kliknij ikonę aby skopiować adres
+    </span>
+  </div>
+</div>
 
 
             <a 
