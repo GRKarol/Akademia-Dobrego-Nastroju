@@ -142,7 +142,7 @@ const ContactInvitation: React.FC<ContactInvitationProps> = ({ onBack, onJoinClu
             </a>
 
         <a 
-  href="mailto:akademiadobregonastroju@gmail.com?subject=Propozycja współpracy w Akademii&body=Jeśli adresat nie ustawił się automatycznie, skopiuj ten adres e-mail i wklej go jako odbiorcę: akademiadobregonastroju@gmail.com %0D%0A%0D%0A" 
+  href="mailto:akademiadobregonastroju@gmail.com?subject=Dzień dobry, %0D%0A%0D%0A" 
   className="flex items-start space-x-4 md:space-x-6 group"
 >
   <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center border border-[#8B4513]/20 rounded-full text-[#8B4513] group-hover:bg-[#8B4513] group-hover:text-white transition-all">
