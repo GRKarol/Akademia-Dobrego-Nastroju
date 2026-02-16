@@ -131,8 +131,9 @@ const ContactInvitation: React.FC<ContactInvitationProps> = ({ onBack, onJoinClu
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-32 items-start">
           <div className="space-y-10">
+            {/* TELEFON */}
             <a href="tel:+48502105729" className="flex items-center space-x-6 group">
-              <div className="w-12 h-12 flex items-center justify-center border border-[#8B4513]/20 rounded-full text-[#8B4513] group-hover:bg-[#8B4513] group-hover:text-white transition-all">
+              <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center border border-[#8B4513]/20 rounded-full text-[#8B4513] group-hover:bg-[#8B4513] group-hover:text-white transition-all">
                 <Phone size={20} strokeWidth={1.5} />
               </div>
               <div>
@@ -140,64 +141,59 @@ const ContactInvitation: React.FC<ContactInvitationProps> = ({ onBack, onJoinClu
                 <span className="text-2xl md:text-3xl font-serif text-[#121212]">502 105 729</span>
               </div>
             </a>
-<div className="flex items-start space-x-4 md:space-x-6 group">
-  <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center border border-[#8B4513]/20 rounded-full text-[#8B4513] group-hover:bg-[#8B4513] group-hover:text-white transition-all">
-    <Mail size={20} strokeWidth={1.5} />
-  </div>
-  <div className="flex-1 min-w-0">
-    <span className="block text-[10px] uppercase tracking-widest text-[#121212]/40 mb-1 font-bold">Napisz wiadomość</span>
-    
-    <div className="flex items-center gap-3">
-        <a 
-  href="mailto:akademiadobregonastroju@gmail.com?subject=Dzień dobry, %0D%0A%0D%0A" 
-  className="flex items-start space-x-4 md:space-x-6 group"
->
-  <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center border border-[#8B4513]/20 rounded-full text-[#8B4513] group-hover:bg-[#8B4513] group-hover:text-white transition-all">
-    <Mail size={20} strokeWidth={1.5} />
-  </div>
-  <div className="flex-1 min-w-0">
-    <span className="block text-[10px] uppercase tracking-widest text-[#121212]/40 mb-1 font-bold">Napisz wiadomość</span>
-    <span className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl font-serif text-[#121212] block break-all leading-snug">
-      akademiadobregonastroju@gmail.com
-    </span>
-  </div>
-</a>
- {/* PRZYCISK KOPIUJ - dla komputerów */}
-      <button
-        onClick={(e) => {
-          e.preventDefault();
-          navigator.clipboard.writeText('akademiadobregonastroju@gmail.com').then(() => {
-            // Pokaż powiadomienie
-            const btn = e.currentTarget;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
-            btn.classList.add('text-green-600');
-            setTimeout(() => {
-              btn.innerHTML = originalText;
-              btn.classList.remove('text-green-600');
-            }, 2000);
-          }).catch(() => {
-            alert('Nie udało się skopiować. Adres: akademiadobregonastroju@gmail.com');
-          });
-        }}
-        className="flex-shrink-0 p-2 text-[#8B4513]/40 hover:text-[#8B4513] hover:bg-[#8B4513]/5 rounded-sm transition-all group/copy"
-        title="Kopiuj adres email"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <rect x="9" y="9" width="13" height="13" rx="2" ry="2" strokeWidth="2"></rect>
-          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" strokeWidth="2"></path>
-        </svg>
-      </button>
-    </div>
-    
-    {/* Podpowiedź dla użytkowników desktop */}
-    <span className="hidden md:block text-[9px] text-[#121212]/30 italic mt-1">
-      Kliknij ikonę aby skopiować adres
-    </span>
-  </div>
-</div>
 
+            {/* EMAIL - POPRAWIONY */}
+            <div className="flex items-start space-x-4 md:space-x-6 group">
+              <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center border border-[#8B4513]/20 rounded-full text-[#8B4513] group-hover:bg-[#8B4513] group-hover:text-white transition-all">
+                <Mail size={20} strokeWidth={1.5} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <span className="block text-[10px] uppercase tracking-widest text-[#121212]/40 mb-1 font-bold">Napisz wiadomość</span>
+                
+                <div className="flex items-center gap-3">
+                  {/* EMAIL - klikalne */}
+                  <a 
+                    href="mailto:akademiadobregonastroju@gmail.com?subject=Kontakt+ze+strony+Akademii"
+                    className="text-xs sm:text-sm md:text-base lg:text-lg font-serif text-[#121212] block break-all leading-snug hover:text-[#8B4513] transition-colors flex-1"
+                  >
+                    akademiadobregonastroju@gmail.com
+                  </a>
+                  
+                  {/* PRZYCISK KOPIUJ */}
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigator.clipboard.writeText('akademiadobregonastroju@gmail.com').then(() => {
+                        const btn = e.currentTarget;
+                        const originalHTML = btn.innerHTML;
+                        btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+                        btn.classList.add('text-green-600');
+                        setTimeout(() => {
+                          btn.innerHTML = originalHTML;
+                          btn.classList.remove('text-green-600');
+                        }, 2000);
+                      }).catch(() => {
+                        alert('Nie udało się skopiować. Adres: akademiadobregonastroju@gmail.com');
+                      });
+                    }}
+                    className="flex-shrink-0 p-2 text-[#8B4513]/40 hover:text-[#8B4513] hover:bg-[#8B4513]/5 rounded-sm transition-all"
+                    title="Kopiuj adres email"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" strokeWidth="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" strokeWidth="2"></path>
+                    </svg>
+                  </button>
+                </div>
+                
+                {/* Podpowiedź dla desktop */}
+                <span className="hidden md:block text-[9px] text-[#121212]/30 italic mt-1">
+                  Kliknij ikonę aby skopiować adres
+                </span>
+              </div>
+            </div>
 
+            {/* FACEBOOK */}
             <a 
               href="https://www.facebook.com/people/Akademia-Dobrego-Nastroju/100072041536375/" 
               target="_blank" 
@@ -211,6 +207,7 @@ const ContactInvitation: React.FC<ContactInvitationProps> = ({ onBack, onJoinClu
           </div>
         </div>
 
+        {/* MAPA */}
         <section className="space-y-10 mb-40">
           <div className="space-y-2">
             <h3 className="font-serif text-4xl md:text-6xl italic">Tutaj jesteśmy:</h3>
@@ -249,6 +246,7 @@ const ContactInvitation: React.FC<ContactInvitationProps> = ({ onBack, onJoinClu
           </div>
         </section>
 
+        {/* WYDARZENIA */}
         <section className="max-w-4xl mx-auto pt-12 mb-20">
            <div className="flex flex-col items-center text-center space-y-10">
               <div className="space-y-4">
@@ -271,6 +269,7 @@ const ContactInvitation: React.FC<ContactInvitationProps> = ({ onBack, onJoinClu
            </div>
         </section>
 
+        {/* KLUB NUTY */}
         <section className="max-w-4xl mx-auto pt-24 mb-40">
           <div className="text-center">
             <div className="bg-[#EADDCA] p-10 md:p-24 rounded-sm border border-[#121212]/10 shadow-lg space-y-12">
@@ -311,6 +310,7 @@ const ContactInvitation: React.FC<ContactInvitationProps> = ({ onBack, onJoinClu
           </div>
         </section>
 
+        {/* SCROLL INDICATOR */}
         <div className="h-[150vh] flex flex-col items-center justify-start pt-40">
           <motion.div 
             initial={{ opacity: 0 }}
