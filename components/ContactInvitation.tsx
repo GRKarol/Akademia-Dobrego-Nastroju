@@ -15,7 +15,7 @@ interface AccessCode {
   role: 'member' | 'admin';
 }
 
-const ContactInvitation: React.FC<ContactInvitationProps> = ({ onBack, onJoinClub, onGoToEvents }) => {
+const ContactInvitation: React.FC<ContactInvitationProps> = ({ onBack, onJoinClub, onGoToEvents, onScrollToBottom }) => {
   const [code, setCode] = useState('');
   const [error, setError] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
