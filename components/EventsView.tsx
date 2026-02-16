@@ -159,7 +159,7 @@ const archivedEvents = adnEvents.filter(e =>
                         <div className="px-3 py-1 border border-[#966F33]/20 text-[#966F33] text-[9px] uppercase tracking-widest font-bold">Wydarzenie</div>
                         <div className="flex items-center space-x-2 text-[#2C1810]/30 text-[9px] uppercase tracking-widest font-bold"><Clock size={12}/> <span>{activeEvents[activeIndex].date}</span></div>
                       </div>
-                      <h3 className="font-serif text-4xl md:text-7xl leading-tight text-[#2C1810] italic font-bold uppercase">{activeEvents[activeIndex].title}</h3>
+                      <h3 className="font-serif text-2xl sm:text-3xl md:text-5xl lg:text-6xl xl:text-7xl leading-tight text-[#2C1810] italic font-bold uppercase break-words hyphens-auto">{activeEvents[activeIndex].title}</h3>
                       <div className="text-[#2C1810]/60 font-light text-base md:text-lg leading-relaxed whitespace-pre-wrap">{activeEvents[activeIndex].description}</div>
                       <div className="pt-8 flex flex-wrap gap-8 border-t border-[#2C1810]/10">
                        <div className="flex items-center space-x-3 group/info">
