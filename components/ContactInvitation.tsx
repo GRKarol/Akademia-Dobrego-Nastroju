@@ -8,6 +8,7 @@ interface ContactInvitationProps {
   onBack?: () => void;
   onJoinClub?: (code: string) => void;
   onGoToEvents?: () => void;
+  onScrollToBottom?: () => void;
 }
 
 interface AccessCode {
