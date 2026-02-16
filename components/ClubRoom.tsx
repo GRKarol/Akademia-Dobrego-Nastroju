@@ -4,7 +4,8 @@ import {
   LogOut, Send, Image as ImageIcon, BarChart3, Megaphone, User, 
   ShieldCheck, Users, Edit2, Check, X, Plus, MessageSquare, 
   Upload, Loader2, Calendar, MapPin, ArrowUp, ArrowDown, 
-  Sparkles, Trash2, Key, Shield, ArrowLeft, Save, ArrowRight
+  Sparkles, Trash2, Key, Shield, ArrowLeft, Save, ArrowRight,
+  Archive, ArchiveRestore
 } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { 
@@ -47,6 +48,7 @@ interface AdnEvent {
   image?: string;
   timestamp: number;
   order: number;
+  isArchived?: boolean; // ✅ NOWE POLE
 }
 
 interface AdnUser {
@@ -112,12 +114,14 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
   const [editUserLastName, setEditUserLastName] = useState('');
   const [isCreatingEvent, setIsCreatingEvent] = useState(false);
 
-  // ✅ NOWE STANY DLA EDYCJI WYDARZEŃ
   const [editingEventId, setEditingEventId] = useState<string | null>(null);
   const [editEventTitle, setEditEventTitle] = useState('');
   const [editEventDesc, setEditEventDesc] = useState('');
   const [editEventDate, setEditEventDate] = useState('');
   const [editEventImage, setEditEventImage] = useState<string | null>(null);
+
+  // ✅ NOWY STAN - Widok aktywne/archiwum
+  const [showArchived, setShowArchived] = useState(false);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -303,7 +307,8 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
         location: "Kręta 23, Kłobuck",
         image: selectedImageBase64 || null,
         timestamp: Date.now(),
-        order: adnEvents.length
+        order: adnEvents.length,
+        isArchived: false // ✅ DOMYŚLNIE NIE ZARCHIWIZOWANE
       };
       await addDoc(collection(db, "adn_events"), eventData);
       setEventTitle(''); setEventDesc(''); setEventDate(''); setSelectedImageBase64(null);
@@ -316,7 +321,6 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
     }
   };
 
-  // ✅ NOWA FUNKCJA - AKTUALIZACJA WYDARZENIA
   const updateAdnEvent = async (eventId: string) => {
     if (!editEventTitle || !editEventDesc) return;
     
@@ -329,7 +333,6 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
         image: editEventImage || null
       });
       
-      // Reset
       setEditingEventId(null);
       setEditEventTitle('');
       setEditEventDesc('');
@@ -338,6 +341,19 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
     } catch (e) {
       console.error("Błąd aktualizacji:", e);
       alert("Nie udało się zaktualizować wydarzenia.");
+    }
+  };
+
+  // ✅ NOWA FUNKCJA - PRZENIEŚ DO ARCHIWUM
+  const toggleArchiveEvent = async (eventId: string, currentStatus: boolean) => {
+    try {
+      const eventRef = doc(db, "adn_events", eventId);
+      await updateDoc(eventRef, {
+        isArchived: !currentStatus
+      });
+    } catch (e) {
+      console.error("Błąd archiwizacji:", e);
+      alert("Nie udało się zmienić statusu archiwum.");
     }
   };
 
@@ -350,6 +366,11 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
     });
     setEditingUserId(null);
   };
+
+  // ✅ FILTRACJA WYDARZEŃ
+  const activeEvents = adnEvents.filter(e => !e.isArchived);
+  const archivedEvents = adnEvents.filter(e => e.isArchived);
+  const displayedEvents = showArchived ? archivedEvents : activeEvents;
 
   if (!user) {
     return (
@@ -498,7 +519,6 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
                    </motion.div>
                  )}
 
-                 {/* ✅ NOWY MODAL - EDYCJA WYDARZENIA */}
                  {editingEventId && (
                    <motion.div 
                      initial={{ opacity: 0, scale: 0.95 }} 
@@ -586,13 +606,26 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
                   {managementSubTab === 'events' && (
                     <div className="space-y-6">
                       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                        <h3 className="text-xl md:text-2xl font-serif italic text-[#1A0F0A]">Wydarzenia Premium</h3>
+                        <div className="flex items-center gap-4">
+                          <h3 className="text-xl md:text-2xl font-serif italic text-[#1A0F0A]">
+                            {showArchived ? 'Archiwum Wydarzeń' : 'Wydarzenia Premium'}
+                          </h3>
+                          {/* ✅ PRZEŁĄCZNIK AKTYWNE/ARCHIWUM */}
+                          <button 
+                            onClick={() => setShowArchived(!showArchived)}
+                            className="flex items-center gap-2 px-4 py-2 bg-white border border-[#1A0F0A]/10 rounded-sm text-[10px] uppercase tracking-widest font-bold text-[#1A0F0A]/60 hover:text-[#1A0F0A] hover:bg-[#1A0F0A]/5 transition-all"
+                          >
+                            {showArchived ? <><Sparkles size={14}/> Aktywne ({activeEvents.length})</> : <><Archive size={14}/> Archiwum ({archivedEvents.length})</>}
+                          </button>
+                        </div>
+                        
                         <button onClick={()=>setShowEventCreator(true)} className="flex items-center gap-2 text-[10px] uppercase tracking-widest bg-[#1A0F0A] text-white px-6 py-3 font-bold w-full sm:w-auto justify-center rounded-sm shadow-md transition-all hover:bg-[#331c12]">
                           <Plus size={16}/> Dodaj Nowe
                         </button>
                       </div>
+                      
                       <div className="grid gap-4">
-                        {adnEvents.map((ev, i) => (
+                        {displayedEvents.map((ev, i) => (
                           <div key={ev.id} className="bg-white border border-[#1A0F0A]/5 p-4 flex items-center justify-between group rounded-sm shadow-sm">
                             <div className="flex items-center gap-4 overflow-hidden">
                               <span className="text-[#1A0F0A] font-serif italic w-6 shrink-0 font-bold">{i+1}.</span>
@@ -602,20 +635,44 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
                               </div>
                             </div>
                             <div className="flex items-center gap-2 shrink-0">
+                              {/* ✅ STRZAŁKI - TYLKO DLA WYŚWIETLANEJ LISTY */}
                               <button 
                                 onClick={async ()=>{ 
                                   if(i > 0) { 
-                                    const prev = adnEvents[i-1]; 
-                                    await updateDoc(doc(db, "adn_events", ev.id), { order: i - 1 }); 
-                                    await updateDoc(doc(db, "adn_events", prev.id), { order: i }); 
+                                    const prev = displayedEvents[i-1]; 
+                                    await updateDoc(doc(db, "adn_events", ev.id), { order: prev.order }); 
+                                    await updateDoc(doc(db, "adn_events", prev.id), { order: ev.order }); 
                                   } 
                                 }} 
                                 className="p-2 text-[#1A0F0A]/20 hover:text-[#1A0F0A] transition-colors"
+                                title="Przesuń w górę"
                               >
                                 <ArrowUp size={16}/>
                               </button>
                               
-                              {/* ✅ NOWY PRZYCISK EDYCJI */}
+                              <button 
+                                onClick={async ()=>{ 
+                                  if(i < displayedEvents.length - 1) { 
+                                    const next = displayedEvents[i+1]; 
+                                    await updateDoc(doc(db, "adn_events", ev.id), { order: next.order }); 
+                                    await updateDoc(doc(db, "adn_events", next.id), { order: ev.order }); 
+                                  } 
+                                }} 
+                                className="p-2 text-[#1A0F0A]/20 hover:text-[#1A0F0A] transition-colors"
+                                title="Przesuń w dół"
+                              >
+                                <ArrowDown size={16}/>
+                              </button>
+                              
+                              {/* ✅ ARCHIWIZUJ/PRZYWRÓĆ */}
+                              <button 
+                                onClick={() => toggleArchiveEvent(ev.id, ev.isArchived || false)} 
+                                className="p-2 text-[#1A0F0A]/20 hover:text-amber-600 hover:bg-amber-50 rounded-sm transition-all"
+                                title={ev.isArchived ? "Przywróć z archiwum" : "Przenieś do archiwum"}
+                              >
+                                {ev.isArchived ? <ArchiveRestore size={16}/> : <Archive size={16}/>}
+                              </button>
+                              
                               <button 
                                 onClick={() => {
                                   setEditingEventId(ev.id);
