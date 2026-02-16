@@ -349,4 +349,4 @@ const ContactInvitation: React.FC<ContactInvitationProps> = ({ onBack, onJoinClu
   );
 };
 
-export default ContactInvitation; napisz cały kod tak jak powinien być w całości
+export default ContactInvitation;
