@@ -172,14 +172,15 @@ const archivedEvents = adnEvents.filter(e =>
                         </div>
                       </div>
                     </div>
-                  <div className="relative w-full aspect-square md:aspect-auto h-auto overflow-hidden rounded-sm border border-[#2C1810]/5 bg-white p-2">
-  <img 
-    src={activeEvents[activeIndex].image || "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4"} 
-    className="w-full h-full object-cover block rounded-sm grayscale-[0.2] hover:grayscale-0 transition-all duration-700" 
-    alt={activeEvents[activeIndex].title}
-  />
-
-                    </div>
+                 {activeEvents[activeIndex].image && (
+  <div className="relative w-full aspect-square md:aspect-auto h-auto overflow-hidden rounded-sm border border-[#2C1810]/5 bg-white p-2">
+    <img 
+      src={activeEvents[activeIndex].image} 
+      className="w-full h-full object-cover block rounded-sm grayscale-[0.2] hover:grayscale-0 transition-all duration-700" 
+      alt={activeEvents[activeIndex].title}
+    />
+  </div>
+)}
                   </motion.div>
                 </AnimatePresence>
               </div>
