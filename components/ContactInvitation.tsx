@@ -1,18 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Phone, 
-  Mail, 
-  Facebook, 
-  MapPin, 
-  ExternalLink, 
-  ArrowLeft, 
-  ArrowRight, 
-  Sparkles, 
-  Loader2,
-  Copy,
-  Check
-} from 'lucide-react';
+import { Phone, Mail, ArrowLeft, Loader2, ExternalLink, MapPin, Facebook, ArrowRight, Sparkles } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { collection, getDocs } from 'firebase/firestore';
 
@@ -27,311 +15,328 @@ interface AccessCode {
   role: 'member' | 'admin';
 }
 
-const ContactInvitation: React.FC<ContactInvitationProps> = ({ 
-  onBack, 
-  onJoinClub,
-  onGoToEvents 
-}) => {
+const ContactInvitation: React.FC<ContactInvitationProps> = ({ onBack, onJoinClub, onGoToEvents }) => {
   const [code, setCode] = useState('');
   const [error, setError] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
-  const [isCopied, setIsCopied] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // IntersectionObserver do automatycznego przejścia do wydarzeń
   useEffect(() => {
-    if (!bottomRef.current || !onGoToEvents) return;
+    if (!onGoToEvents) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
-          onGoToEvents();
+          const timer = setTimeout(() => {
+            onGoToEvents();
+          }, 400);
+          return () => clearTimeout(timer);
         }
       },
-      { threshold: 0.5 }
+      { 
+        threshold: 0.05,
+        rootMargin: '0px 0px 200px 0px' 
+      }
     );
 
-    observer.observe(bottomRef.current);
+    if (bottomRef.current) {
+      observer.observe(bottomRef.current);
+    }
+
     return () => observer.disconnect();
   }, [onGoToEvents]);
 
   const handleCodeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!code.trim() || isValidating) return;
-
     setIsValidating(true);
-    setError(false);
-
+    const inputCode = code.toLowerCase().trim();
+    
+    console.log("🔎 Szukam kodu:", inputCode);
+    
     try {
-      const inputCode = code.trim().toLowerCase();
-      const snap = await getDocs(collection(db, 'access_codes'));
+      const snap = await getDocs(collection(db, "access_codes"));
       const codes = snap.docs.map(d => d.data() as AccessCode);
+      
+      console.log("📋 Wszystkie kody w bazie:", codes);
+      
       const found = codes.find(c => c.value === inputCode);
-
-      if (found && onJoinClub) {
-        onJoinClub(inputCode);
+      
+      console.log("✅ Znaleziony kod?", found);
+      
+      if (found) {
+        console.log("🎉 Kod jest poprawny! Wywołuję onJoinClub z:", inputCode);
+        onJoinClub?.(inputCode);
       } else {
+        console.log("❌ Kod niepoprawny!");
         setError(true);
-        setTimeout(() => setError(false), 3000);
+        setTimeout(() => setError(false), 2000);
       }
     } catch (err) {
-      console.error('Firebase error:', err);
+      console.error("💥 Firebase error:", err);
       setError(true);
-      setTimeout(() => setError(false), 3000);
     } finally {
       setIsValidating(false);
     }
   };
 
-  const handleCopyEmail = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    try {
-      await navigator.clipboard.writeText('akademiadobregonastroju@gmail.com');
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
-    } catch (err) {
-      console.error('Błąd kopiowania:', err);
-      // Fallback - zaznacz tekst do manualnego kopiowania
-      const emailLink = document.querySelector('a[href^="mailto:akademiadobregonastroju"]');
-      if (emailLink) {
-        const range = document.createRange();
-        range.selectNodeContents(emailLink);
-        const selection = window.getSelection();
-        if (selection) {
-          selection.removeAllRanges();
-          selection.addRange(range);
-        }
-      }
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-[#F5F2EB] text-[#121212] relative overflow-x-hidden">
-      {/* Przycisk powrotu */}
-      {onBack && (
-        <button
-          onClick={onBack}
-          className="fixed top-8 left-8 z-50 w-12 h-12 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm border border-[#8B4513]/20 text-[#8B4513] hover:bg-[#8B4513] hover:text-white transition-all shadow-lg"
-        >
-          <ArrowLeft size={20} strokeWidth={1.5} />
-        </button>
-      )}
+    <div className="w-full min-h-screen bg-[#F1E9D2] text-[#121212] selection:bg-[#966F33] selection:text-white overflow-x-hidden">
+      <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
+        {onBack && (
+          <button 
+            onClick={onBack}
+            className="pointer-events-auto flex items-center space-x-2 text-[#121212]/40 hover:text-[#121212] transition-all group"
+          >
+            <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+            <span className="font-serif italic text-lg">Powrót</span>
+          </button>
+        )}
+      </nav>
 
-      <div className="container mx-auto px-6 md:px-12 py-24 md:py-32 max-w-7xl">
-        {/* Nagłówek */}
+      <div className="max-w-screen-xl mx-auto px-6 md:px-12 pt-32 pb-12">
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-20"
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+          className="max-w-4xl mb-20"
         >
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.8 }}
-            className="font-serif text-4xl md:text-5xl lg:text-6xl mb-6 text-[#2C1810]"
-          >
-            Skontaktuj się z nami
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4, duration: 0.8 }}
-            className="text-lg md:text-xl text-[#8B4513]/80 max-w-2xl mx-auto font-light"
-          >
-            Jesteśmy tu dla Ciebie. Wybierz najwygodniejszy sposób kontaktu.
-          </motion.p>
+          <h2 className="font-serif text-5xl md:text-8xl leading-[1] tracking-tighter mb-4">
+            Jeśli czujesz <br />
+            <span className="italic text-[#8B4513]">to samo co my...</span>
+          </h2>
+          
+          <h3 className="text-[#8B4513] uppercase tracking-[0.3em] text-sm md:text-base font-bold mb-10">
+            Jeśli masz pasję, którą chcesz dzielić
+          </h3>
+
+          <div className="h-px w-24 bg-[#121212]/10 mb-10" />
+          
+          <p className="text-xl md:text-3xl font-light text-[#121212]/90 leading-relaxed max-w-3xl italic">
+            Prosimy o szczerość. O gotowość do rozmowy. O chęć bycia częścią czegoś, co buduje się powoli, ale na lata. 
+            Nie trzeba mieć 50 lat ani dwóch dyplomów – trzeba mieć głowę pełną myśli i serce otwarte na wspólnotę.
+          </p>
         </motion.div>
 
-        {/* Sekcja kontaktowa */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="mb-16 md:mb-32"
+        >
+          <h3 className="font-serif text-5xl sm:text-7xl md:text-9xl leading-none italic text-[#121212] tracking-tight">
+            Porozmawiajmy.
+          </h3>
+        </motion.div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-32 items-start">
           <div className="space-y-10">
-            {/* Telefon */}
-            <motion.a
-              href="tel:+48502105729"
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.6, duration: 0.6 }}
-              className="flex items-center space-x-6 group"
-            >
-              <div className="w-12 h-12 flex items-center justify-center border border-[#8B4513]/20 rounded-full text-[#8B4513] group-hover:bg-[#8B4513] group-hover:text-white transition-all">
+            {/* TELEFON */}
+            <a href="tel:+48502105729" className="flex items-center space-x-6 group">
+              <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center border border-[#8B4513]/20 rounded-full text-[#8B4513] group-hover:bg-[#8B4513] group-hover:text-white transition-all">
                 <Phone size={20} strokeWidth={1.5} />
               </div>
               <div>
-                <span className="block text-[10px] uppercase tracking-widest text-[#121212]/40 mb-1 font-bold">
-                  Zadzwoń do nas
-                </span>
-                <span className="text-lg md:text-2xl font-serif text-[#121212]">
-                  +48 502 105 729
-                </span>
+                <span className="block text-[10px] uppercase tracking-widest text-[#121212]/40 mb-1 font-bold">Zadzwoń do nas</span>
+                <span className="text-2xl md:text-3xl font-serif text-[#121212]">502 105 729</span>
               </div>
-            </motion.a>
+            </a>
 
-            {/* Email z przyciskiem kopiowania */}
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.7, duration: 0.6 }}
-              className="flex items-start space-x-4 md:space-x-6 group"
-            >
+            {/* EMAIL - POPRAWIONY */}
+            <div className="flex items-start space-x-4 md:space-x-6 group">
               <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center border border-[#8B4513]/20 rounded-full text-[#8B4513] group-hover:bg-[#8B4513] group-hover:text-white transition-all">
                 <Mail size={20} strokeWidth={1.5} />
               </div>
               <div className="flex-1 min-w-0">
-                <span className="block text-[10px] uppercase tracking-widest text-[#121212]/40 mb-1 font-bold">
-                  Napisz wiadomość
-                </span>
+                <span className="block text-[10px] uppercase tracking-widest text-[#121212]/40 mb-1 font-bold">Napisz wiadomość</span>
+                
                 <div className="flex items-center gap-3">
-                  <a
-                    href="mailto:akademiadobregonastroju@gmail.com?subject=Kontakt+ze+strony+Akademii&body=Dzień+dobry,%0D%0A%0D%0A"
-                    className="text-xs sm:text-sm md:text-base lg:text-lg font-serif text-[#121212] hover:text-[#8B4513] transition-colors break-all leading-snug"
+                  {/* EMAIL - klikalne */}
+                  <a 
+                    href="mailto:akademiadobregonastroju@gmail.com?subject=Kontakt+ze+strony+Akademii"
+                    className="text-xs sm:text-sm md:text-base lg:text-lg font-serif text-[#121212] block break-all leading-snug hover:text-[#8B4513] transition-colors flex-1"
                   >
                     akademiadobregonastroju@gmail.com
                   </a>
+                  
+                  {/* PRZYCISK KOPIUJ */}
                   <button
-                    onClick={handleCopyEmail}
-                    className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded border border-[#8B4513]/20 text-[#8B4513] hover:bg-[#8B4513] hover:text-white transition-all"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigator.clipboard.writeText('akademiadobregonastroju@gmail.com').then(() => {
+                        const btn = e.currentTarget;
+                        const originalHTML = btn.innerHTML;
+                        btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+                        btn.classList.add('text-green-600');
+                        setTimeout(() => {
+                          btn.innerHTML = originalHTML;
+                          btn.classList.remove('text-green-600');
+                        }, 2000);
+                      }).catch(() => {
+                        alert('Nie udało się skopiować. Adres: akademiadobregonastroju@gmail.com');
+                      });
+                    }}
+                    className="flex-shrink-0 p-2 text-[#8B4513]/40 hover:text-[#8B4513] hover:bg-[#8B4513]/5 rounded-sm transition-all"
                     title="Kopiuj adres email"
                   >
-                    {isCopied ? <Check size={14} /> : <Copy size={14} />}
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" strokeWidth="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" strokeWidth="2"></path>
+                    </svg>
                   </button>
                 </div>
-                <span className="hidden md:block text-[9px] text-[#121212]/30 mt-1">
-                  Kliknij ikonę aby skopiować
+                
+                {/* Podpowiedź dla desktop */}
+                <span className="hidden md:block text-[9px] text-[#121212]/30 italic mt-1">
+                  Kliknij ikonę aby skopiować adres
                 </span>
               </div>
-            </motion.div>
-
-            {/* Facebook */}
-            <motion.a
-              href="https://www.facebook.com/people/Akademia-Dobrego-Nastroju/100072041536375/"
-              target="_blank"
-              rel="noopener noreferrer"
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.8, duration: 0.6 }}
-              className="inline-flex items-center space-x-4 text-[#966F33] hover:text-[#8B4513] transition-all group pt-4"
-            >
-              <Facebook size={22} strokeWidth={1.5} />
-              <span className="font-medium text-sm tracking-wide">
-                Odwiedź nas na Facebooku
-              </span>
-              <ExternalLink size={16} strokeWidth={1.5} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-            </motion.a>
-          </div>
-
-          {/* Mapa Google */}
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.9, duration: 0.6 }}
-            className="relative h-[400px] rounded-2xl overflow-hidden border border-[#8B4513]/20 shadow-xl"
-          >
-            <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2491.234567890123!2d18.933891!3d50.900568!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4710b1c7e3a4c8d9%3A0x1234567890abcdef!2sKr%C4%99ta%2023%2C%2042-100%20K%C5%82obuck!5e0!3m2!1spl!2spl!4v1234567890123!5m2!1spl!2spl"
-              width="100%"
-              height="100%"
-              style={{ border: 0 }}
-              allowFullScreen
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-            />
-            <a
-              href="https://www.google.com/maps/dir/?api=1&destination=Kręta+23+Kłobuck"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="absolute bottom-4 right-4 bg-white px-4 py-2 rounded-lg shadow-lg flex items-center space-x-2 text-[#8B4513] hover:bg-[#8B4513] hover:text-white transition-all text-sm font-medium"
-            >
-              <MapPin size={16} />
-              <span>Nawiguj</span>
-            </a>
-          </motion.div>
-        </div>
-
-        {/* Przycisk do wydarzeń */}
-        {onGoToEvents && (
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.0, duration: 0.6 }}
-            className="text-center mb-32"
-          >
-            <motion.button
-              onClick={onGoToEvents}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="inline-flex items-center space-x-4 px-10 py-5 bg-gradient-to-r from-[#8B4513] to-[#966F33] text-white rounded-full font-medium text-lg shadow-2xl hover:shadow-3xl transition-all"
-            >
-              <Sparkles size={22} />
-              <span>Zobacz co się dzieje wewnątrz</span>
-              <ArrowRight size={22} />
-            </motion.button>
-          </motion.div>
-        )}
-
-        {/* Prywatny Klub */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.1, duration: 0.8 }}
-          className="max-w-2xl mx-auto bg-white rounded-3xl p-10 md:p-14 shadow-2xl border border-[#8B4513]/10"
-        >
-          <div className="text-center mb-8">
-            <h2 className="font-serif text-3xl md:text-4xl text-[#2C1810] mb-4">
-              Prywatny Klub
-            </h2>
-            <p className="text-[#8B4513]/70 text-base">
-              Posiadasz kod dostępu? Wejdź do ekskluzywnej przestrzeni dla członków Akademii.
-            </p>
-          </div>
-
-          <form onSubmit={handleCodeSubmit} className="space-y-6">
-            <div className="relative">
-              <input
-                type="text"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder="Wprowadź kod dostępu"
-                disabled={isValidating}
-                className="w-full px-6 py-4 border-2 border-[#8B4513]/20 rounded-xl focus:border-[#8B4513] focus:outline-none transition-all text-center font-medium text-lg tracking-wider uppercase disabled:opacity-50 disabled:cursor-not-allowed"
-              />
-              {error && (
-                <motion.p
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="absolute -bottom-6 left-0 right-0 text-center text-red-600 text-sm font-medium"
-                >
-                  Nieprawidłowy kod dostępu
-                </motion.p>
-              )}
             </div>
 
-            <motion.button
-              type="submit"
-              disabled={!code.trim() || isValidating}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full py-4 bg-gradient-to-r from-[#8B4513] to-[#966F33] text-white rounded-xl font-semibold text-lg shadow-xl hover:shadow-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-3"
+            {/* FACEBOOK */}
+            <a 
+              href="https://www.facebook.com/people/Akademia-Dobrego-Nastroju/100072041536375/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center space-x-4 text-[#966F33] hover:text-[#8B4513] transition-all group pt-4"
             >
-              {isValidating ? (
-                <>
-                  <Loader2 size={20} className="animate-spin" />
-                  <span>Sprawdzanie...</span>
-                </>
-              ) : (
-                <span>Wejdź do Klubu</span>
-              )}
-            </motion.button>
-          </form>
-        </motion.div>
+              <Facebook size={24} strokeWidth={1.5} />
+              <span className="font-serif italic text-xl md:text-2xl border-b border-[#966F33]/30 pb-1">Śledź nas na facebooku</span>
+              <ExternalLink size={18} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+            </a>
+          </div>
+        </div>
 
-        {/* Element do wykrywania scrolla */}
-        <div ref={bottomRef} className="h-20" />
+        {/* MAPA */}
+        <section className="space-y-10 mb-40">
+          <div className="space-y-2">
+            <h3 className="font-serif text-4xl md:text-6xl italic">Tutaj jesteśmy:</h3>
+            <p className="text-[#121212]/50 font-serif italic text-xl">Kłobuck, ul. Kręta 23</p>
+          </div>
+          
+          <div className="relative group">
+            <div className="w-full h-[400px] md:h-auto md:aspect-[21/9] bg-white rounded-sm overflow-hidden border-8 border-white shadow-2xl relative">
+              <iframe 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2520.1017014467264!2d18.9248473!3d50.9031735!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4710b71946399023%3A0x9599d10e6ca70e0a!2sKr%C4%99ta%2023%2C%2042-100%20K%C5%82obuck!5e0!3m2!1spl!2spl!4v1740924976451!5m2!1spl!2spl" 
+                width="100%" 
+                height="100%" 
+                style={{ border: 0, filter: 'grayscale(0.3) contrast(1.1)' }} 
+                className="group-hover:grayscale-0 transition-all duration-1000 ease-in-out"
+                allowFullScreen 
+                loading="lazy" 
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              className="mt-10 flex justify-center"
+            >
+              <a 
+                href="https://www.google.com/maps/dir/?api=1&destination=Kręta+23+Kłobuck" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center space-x-4 px-10 py-5 bg-[#121212] text-[#F4EBD0] rounded-sm hover:bg-[#8B4513] transition-all transform hover:scale-[1.02] shadow-xl"
+              >
+                <MapPin size={22} strokeWidth={1.5} />
+                <span className="font-serif italic text-xl">Zobacz w aplikacji Mapy</span>
+              </a>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* WYDARZENIA */}
+        <section className="max-w-4xl mx-auto pt-12 mb-20">
+           <div className="flex flex-col items-center text-center space-y-10">
+              <div className="space-y-4">
+                <h4 className="font-serif text-4xl md:text-6xl text-[#2C1810]">Poznaj naszą <span className="italic text-[#966F33]">codzienność</span></h4>
+                <p className="text-[#2C1810]/50 font-serif italic text-xl">Wydarzenia, warsztaty i spotkania, które tworzą historię tego miejsca.</p>
+              </div>
+              
+              <motion.button
+                onClick={onGoToEvents}
+                whileHover={{ scale: 1.05, backgroundColor: "#8B4513", color: "#FFF" }}
+                whileTap={{ scale: 0.95 }}
+                className="group flex items-center space-x-8 px-12 py-8 bg-white border-2 border-[#8B4513]/20 rounded-sm shadow-2xl transition-all"
+              >
+                <div className="flex flex-col items-start text-left">
+                  <span className="text-[10px] uppercase tracking-[0.4em] text-[#8B4513]/60 mb-1 font-bold group-hover:text-white/60">Odkryj teraz</span>
+                  <span className="font-serif italic text-3xl md:text-4xl text-[#8B4513] group-hover:text-white">Zobacz co się dzieje wewnątrz</span>
+                </div>
+                <ArrowRight size={40} className="text-[#8B4513] group-hover:text-white group-hover:translate-x-2 transition-all" />
+              </motion.button>
+           </div>
+        </section>
+
+        {/* KLUB NUTY */}
+        <section className="max-w-4xl mx-auto pt-24 mb-40">
+          <div className="text-center">
+            <div className="bg-[#EADDCA] p-10 md:p-24 rounded-sm border border-[#121212]/10 shadow-lg space-y-12">
+              <div className="space-y-4">
+                <h4 className="text-[#8B4513] text-4xl md:text-7xl font-serif italic font-bold">Klub nuty</h4>
+                <p className="text-xl md:text-2xl font-serif italic text-[#121212]/60">Czat dla członków Klubu</p>
+              </div>
+
+              <form onSubmit={handleCodeSubmit} className="relative max-w-md mx-auto">
+                <div className="relative border-b-2 border-[#121212]/30 focus-within:border-[#8B4513] transition-all pb-2">
+                  <input 
+                    type="text" 
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                    placeholder="Twój klucz..."
+                    disabled={isValidating}
+                    className="w-full bg-transparent text-center text-3xl md:text-5xl font-serif focus:outline-none text-[#121212] placeholder:text-[#121212]/20 py-4"
+                  />
+                  <button 
+                    type="submit" 
+                    disabled={isValidating} 
+                    className="absolute right-0 top-1/2 -translate-y-1/2 text-[#8B4513] hover:translate-x-2 transition-transform p-2"
+                  >
+                    {isValidating ? <Loader2 className="animate-spin" size={32} /> : <ExternalLink size={32} />}
+                  </button>
+                </div>
+                {error && (
+                  <motion.p 
+                    initial={{ opacity: 0, y: 10 }} 
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-red-600 text-xs uppercase tracking-widest font-bold mt-6"
+                  >
+                    Klucz nie pasuje do zamka...
+                  </motion.p>
+                )}
+              </form>
+            </div>
+          </div>
+        </section>
+
+        {/* SCROLL INDICATOR */}
+        <div className="h-[150vh] flex flex-col items-center justify-start pt-40">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            className="flex flex-col items-center space-y-12 text-[#8B4513]"
+          >
+            <div className="px-10 py-4 border border-[#8B4513]/20 rounded-full bg-white/10 backdrop-blur-sm shadow-xl">
+              <p className="font-serif italic text-sm tracking-[0.5em] uppercase opacity-70">Zejdź głębiej, by powrócić do początku</p>
+            </div>
+            
+            <div className="relative h-96 w-px overflow-hidden bg-[#8B4513]/5">
+               <motion.div 
+                  animate={{ y: [-384, 768] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                  className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-transparent via-[#8B4513] to-transparent"
+               />
+            </div>
+            
+            <div ref={bottomRef} className="w-16 h-16 flex items-center justify-center">
+              <Sparkles size={40} className="animate-pulse opacity-50" />
+            </div>
+          </motion.div>
+        </div>
       </div>
     </div>
   );
 };
 
-export default ContactInvitation;
+export default ContactInvitation; napisz cały kod tak jak powinien być w całości
