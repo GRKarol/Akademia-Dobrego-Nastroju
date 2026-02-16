@@ -160,32 +160,42 @@ const ContactInvitation: React.FC<ContactInvitationProps> = ({ onBack, onJoinClu
                   </a>
                   
                   {/* PRZYCISK KOPIUJ */}
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      navigator.clipboard.writeText('akademiadobregonastroju@gmail.com').then(() => {
-                        const btn = e.currentTarget;
-                        const originalHTML = btn.innerHTML;
-                        btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
-                        btn.classList.add('text-green-600');
-                        setTimeout(() => {
-                          btn.innerHTML = originalHTML;
-                          btn.classList.remove('text-green-600');
-                        }, 2000);
-                      }).catch(() => {
-                        alert('Nie udało się skopiować. Adres: akademiadobregonastroju@gmail.com');
-                      });
-                    }}
-                    className="flex-shrink-0 p-2 text-[#8B4513]/40 hover:text-[#8B4513] hover:bg-[#8B4513]/5 rounded-sm transition-all"
-                    title="Kopiuj adres email"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" strokeWidth="2"></rect>
-                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" strokeWidth="2"></path>
-                    </svg>
-                  </button>
-                </div>
-                
+            <button
+  onClick={(e) => {
+    e.preventDefault();
+    navigator.clipboard.writeText('akademiadobregonastroju@gmail.com')
+      .then(() => {
+        // Zmiana ikony na checkmark
+        const btn = e.currentTarget;
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+        btn.classList.add('text-green-600');
+        setTimeout(() => {
+          btn.innerHTML = originalHTML;
+          btn.classList.remove('text-green-600');
+        }, 2000);
+      })
+      .catch((err) => {
+        // Tylko pokazuj alert gdy NAPRAWDĘ się nie udało
+        console.error('Błąd kopiowania:', err);
+        // Fallback - zaznacz tekst do ręcznego skopiowania
+        const emailText = document.querySelector('a[href^="mailto:akademiadobregonastroju"]');
+        if (emailText) {
+          const range = document.createRange();
+          range.selectNode(emailText);
+          window.getSelection()?.removeAllRanges();
+          window.getSelection()?.addRange(range);
+        }
+      });
+  }}
+  className="flex-shrink-0 p-2 text-[#8B4513]/40 hover:text-[#8B4513] hover:bg-[#8B4513]/5 rounded-sm transition-all"
+  title="Kopiuj adres email"
+>
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" strokeWidth="2"></rect>
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" strokeWidth="2"></path>
+  </svg>
+</button>
                 {/* Podpowiedź dla desktop */}
                 <span className="hidden md:block text-[9px] text-[#121212]/30 italic mt-1">
                   Kliknij ikonę aby skopiować adres
