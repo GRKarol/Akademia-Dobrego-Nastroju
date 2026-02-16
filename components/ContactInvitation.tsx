@@ -141,20 +141,21 @@ const ContactInvitation: React.FC<ContactInvitationProps> = ({ onBack, onJoinClu
               </div>
             </a>
 
-            <a 
-  href="mailto:akademiadobregonastroju@gmail.com?subject=Kontakt%20ze%20strony%20Akademii" 
+        <a 
+  href="mailto:akademiadobregonastroju@gmail.com?subject=Propozycja+współpracy+w+Akademii&body=Dzień+dobry,%0D%0A%0D%0A" 
   className="flex items-start space-x-4 md:space-x-6 group"
 >
   <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center border border-[#8B4513]/20 rounded-full text-[#8B4513] group-hover:bg-[#8B4513] group-hover:text-white transition-all">
     <Mail size={20} strokeWidth={1.5} />
   </div>
-  <div className="flex-1 min-w-0 overflow-visible">
+  <div className="flex-1 min-w-0">
     <span className="block text-[10px] uppercase tracking-widest text-[#121212]/40 mb-1 font-bold">Napisz wiadomość</span>
     <span className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl font-serif text-[#121212] block break-all leading-snug">
       akademiadobregonastroju@gmail.com
     </span>
   </div>
 </a>
+
 
 
             <a 
