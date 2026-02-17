@@ -11,6 +11,7 @@ interface AdnEvent {
   date: string;
   location: string;
   image?: string;
+  images?: string[];        // 🆕 Tablica zdjęć dla galerii
   timestamp: number;
   order: number;
   isArchived?: boolean;
@@ -25,6 +26,7 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [direction, setDirection] = useState(0);
   const [expandedArchiveIds, setExpandedArchiveIds] = useState<Set<string>>(new Set());
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);  // 🆕 Stan dla galerii zdjęć
   
   // Scroll locking logic during entry animation - extended to 1s as requested
   useEffect(() => {
@@ -46,6 +48,11 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
     });
     return () => unsub();
   }, []);
+
+  // 🆕 Reset indeksu zdjęcia gdy zmienia się wydarzenie
+  useEffect(() => {
+    setCurrentImageIndex(0);
+  }, [activeIndex]);
 
   const FOUR_WEEKS_MS = 2419200000;
   const now = Date.now();
@@ -103,6 +110,17 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
         ease: [0.16, 1, 0.3, 1] as const
       }
     })
+  };
+
+  // 🆕 FUNKCJA: Pobierz tablicę zdjęć dla wydarzenia
+  const getEventImages = (event: AdnEvent): string[] => {
+    if (event.images && event.images.length > 0) {
+      return event.images;
+    }
+    if (event.image) {
+      return [event.image];
+    }
+    return [];
   };
 
   return (
@@ -209,15 +227,76 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
                       </div>
                     </div>
                     
-                    {activeEvents[activeIndex].image && (
-                      <div className="relative w-full aspect-square md:aspect-auto h-auto overflow-hidden rounded-sm border border-[#2C1810]/5 bg-white p-2">
-                        <img 
-                          src={activeEvents[activeIndex].image} 
-                          className="w-full h-full object-cover block rounded-sm grayscale-[0.2] hover:grayscale-0 transition-all duration-700" 
-                          alt={activeEvents[activeIndex].title}
-                        />
-                      </div>
-                    )}
+                    {/* 🆕 GALERIA ZDJĘĆ */}
+                    {(() => {
+                      const eventImages = getEventImages(activeEvents[activeIndex]);
+                      
+                      if (eventImages.length === 0) return null;
+                      
+                      return (
+                        <div className="relative w-full aspect-square md:aspect-auto h-auto overflow-hidden rounded-sm border border-[#2C1810]/5 bg-white p-2">
+                          <div className="relative w-full h-full">
+                            <img 
+                              src={eventImages[currentImageIndex]} 
+                              className="w-full h-full object-cover block rounded-sm grayscale-[0.2] hover:grayscale-0 transition-all duration-700" 
+                              alt={`${activeEvents[activeIndex].title} - zdjęcie ${currentImageIndex + 1}`}
+                            />
+                            
+                            {/* Kontrolki galerii - tylko gdy więcej niż 1 zdjęcie */}
+                            {eventImages.length > 1 && (
+                              <>
+                                {/* Przyciski poprzedni/następny */}
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setCurrentImageIndex(prev => prev === 0 ? eventImages.length - 1 : prev - 1);
+                                  }}
+                                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-2 rounded-full shadow-lg transition-all z-10"
+                                  aria-label="Poprzednie zdjęcie"
+                                >
+                                  <ChevronLeft size={20} className="text-[#2C1810]" />
+                                </button>
+                                
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setCurrentImageIndex(prev => prev === eventImages.length - 1 ? 0 : prev + 1);
+                                  }}
+                                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-2 rounded-full shadow-lg transition-all z-10"
+                                  aria-label="Następne zdjęcie"
+                                >
+                                  <ChevronRight size={20} className="text-[#2C1810]" />
+                                </button>
+                                
+                                {/* Wskaźniki (dots) */}
+                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/50 px-3 py-2 rounded-full">
+                                  {eventImages.map((_, idx) => (
+                                    <button
+                                      key={idx}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setCurrentImageIndex(idx);
+                                      }}
+                                      className={`rounded-full transition-all ${
+                                        idx === currentImageIndex 
+                                          ? 'bg-white w-6 h-2' 
+                                          : 'bg-white/50 hover:bg-white/80 w-2 h-2'
+                                      }`}
+                                      aria-label={`Przejdź do zdjęcia ${idx + 1}`}
+                                    />
+                                  ))}
+                                </div>
+                                
+                                {/* Licznik zdjęć */}
+                                <div className="absolute top-4 right-4 bg-black/70 text-white px-3 py-1 rounded-full text-xs font-bold">
+                                  {currentImageIndex + 1} / {eventImages.length}
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </motion.div>
                 </AnimatePresence>
               </div>
