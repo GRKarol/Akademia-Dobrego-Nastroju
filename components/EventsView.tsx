@@ -155,7 +155,7 @@ const archivedEvents = adnEvents.filter(e =>
                     className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-16 items-start bg-white border border-[#8B4513]/10 p-6 md:p-12 rounded-sm shadow-xl cursor-grab active:cursor-grabbing"
                   >
                     <div className="space-y-6 select-none">
-                 <div className="w-full pr-2 md:pr-4 lg:pr-6">
+                <div className="w-full pr-2 md:pr-4 lg:pr-6">
   <h3 
     className="font-serif text-[#2C1810] italic font-bold uppercase"
     style={{
@@ -165,15 +165,13 @@ const archivedEvents = adnEvents.filter(e =>
         const longestWord = Math.max(...words.map(w => w.length));
         const totalLength = title.length;
         
-        // Najdłuższe słowo decyduje o maksymalnym rozmiarze
-        let maxSize = 4; // rem
+        let maxSize = 4;
         if (longestWord > 18) maxSize = 1.5;
         else if (longestWord > 15) maxSize = 2;
         else if (longestWord > 12) maxSize = 2.5;
         else if (longestWord > 10) maxSize = 3;
         else if (longestWord > 8) maxSize = 3.25;
         
-        // Całkowita długość też wpływa
         if (totalLength > 50) maxSize *= 0.85;
         else if (totalLength > 40) maxSize *= 0.9;
         
@@ -181,14 +179,16 @@ const archivedEvents = adnEvents.filter(e =>
       })(),
       lineHeight: '1.15',
       maxWidth: '100%',
-      wordBreak: 'break-word',
-      overflowWrap: 'break-word',
-      hyphens: 'auto'
+      wordBreak: 'normal',              // ✅ ZMIENIONE: nie łam słów
+      overflowWrap: 'normal',           // ✅ ZMIENIONE: nie wrap w połowie
+      hyphens: 'none',                  // ✅ ZMIENIONE: wyłącz dzielenie
+      whiteSpace: 'normal'              // ✅ DODANE: normalne zawijanie
     }}
   >
     {activeEvents[activeIndex].title}
   </h3>
 </div>
+
 
                       <div className="text-[#2C1810]/60 font-light text-base md:text-lg leading-relaxed whitespace-pre-wrap">{activeEvents[activeIndex].description}</div>
                       <div className="pt-8 flex flex-wrap gap-8 border-t border-[#2C1810]/10">
