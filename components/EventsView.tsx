@@ -155,13 +155,33 @@ const archivedEvents = adnEvents.filter(e =>
                     className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-16 items-start bg-white border border-[#8B4513]/10 p-6 md:p-12 rounded-sm shadow-xl cursor-grab active:cursor-grabbing"
                   >
                     <div className="space-y-6 select-none">
-                  <div className="w-full max-w-full overflow-hidden">
+                 <div className="w-full pr-2 md:pr-4 lg:pr-6">
   <h3 
-    className="font-serif leading-[1.15] text-[#2C1810] italic font-bold uppercase break-words"
+    className="font-serif text-[#2C1810] italic font-bold uppercase"
     style={{
-      fontSize: `clamp(1.75rem, ${Math.max(2.5, 8 - activeEvents[activeIndex].title.length / 12)}vw, 4rem)`,
+      fontSize: (() => {
+        const title = activeEvents[activeIndex].title;
+        const words = title.split(' ');
+        const longestWord = Math.max(...words.map(w => w.length));
+        const totalLength = title.length;
+        
+        // Najdłuższe słowo decyduje o maksymalnym rozmiarze
+        let maxSize = 4; // rem
+        if (longestWord > 18) maxSize = 1.5;
+        else if (longestWord > 15) maxSize = 2;
+        else if (longestWord > 12) maxSize = 2.5;
+        else if (longestWord > 10) maxSize = 3;
+        else if (longestWord > 8) maxSize = 3.25;
+        
+        // Całkowita długość też wpływa
+        if (totalLength > 50) maxSize *= 0.85;
+        else if (totalLength > 40) maxSize *= 0.9;
+        
+        return `clamp(1.25rem, ${maxSize * 0.8}vw, ${maxSize}rem)`;
+      })(),
+      lineHeight: '1.15',
       maxWidth: '100%',
-      wordWrap: 'break-word',
+      wordBreak: 'break-word',
       overflowWrap: 'break-word',
       hyphens: 'auto'
     }}
