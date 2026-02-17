@@ -1,4 +1,4 @@
- import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LogOut, Send, Image as ImageIcon, BarChart3, Megaphone, User, 
@@ -46,9 +46,10 @@ interface AdnEvent {
   date: string;
   location: string;
   image?: string;
+  images?: string[];        // 🆕 Tablica zdjęć
   timestamp: number;
   order: number;
-  isArchived?: boolean; // ✅ NOWE POLE
+  isArchived?: boolean;
 }
 
 interface AdnUser {
@@ -101,6 +102,7 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
   const [pollQuestion, setPollQuestion] = useState('');
   const [pollOptions, setPollOptions] = useState(['', '']);
   const [selectedImageBase64, setSelectedImageBase64] = useState<string | null>(null);
+  const [selectedImagesBase64, setSelectedImagesBase64] = useState<string[]>([]);  // 🆕 Wiele zdjęć
   const [imageCaption, setImageCaption] = useState('');
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [eventTitle, setEventTitle] = useState('');
@@ -120,7 +122,6 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
   const [editEventDate, setEditEventDate] = useState('');
   const [editEventImage, setEditEventImage] = useState<string | null>(null);
 
-  // ✅ NOWY STAN - Widok aktywne/archiwum
   const [showArchived, setShowArchived] = useState(false);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -233,6 +234,37 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
     }
   };
 
+  // 🆕 NOWA FUNKCJA: Obsługa wielu zdjęć
+  const handleMultipleFilesChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    setIsProcessingImage(true);
+    const compressedImages: string[] = [];
+    
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const reader = new FileReader();
+      
+      await new Promise<void>((resolve) => {
+        reader.onloadend = async () => {
+          const compressed = await compressImage(reader.result as string);
+          compressedImages.push(compressed);
+          resolve();
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+    
+    setSelectedImagesBase64(prev => [...prev, ...compressedImages]);
+    setIsProcessingImage(false);
+  };
+
+  // 🆕 FUNKCJA: Usuwanie pojedynczego zdjęcia z galerii
+  const removeImageFromGallery = (index: number) => {
+    setSelectedImagesBase64(prev => prev.filter((_, i) => i !== index));
+  };
+
   const sendMessage = async (type: 'text' | 'image' | 'poll' = 'text', extra?: any) => {
     if (!user) return;
     if (type === 'text' && !inputText.trim()) return;
@@ -305,13 +337,20 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
         description: eventDesc,
         date: eventDate || "Wkrótce w Akademii",
         location: "Kręta 23, Kłobuck",
-        image: selectedImageBase64 || null,
+        image: selectedImagesBase64[0] || selectedImageBase64 || null,        // Główne zdjęcie = pierwsze
+        images: selectedImagesBase64.length > 0 ? selectedImagesBase64 : [],  // 🆕 Galeria
         timestamp: Date.now(),
         order: adnEvents.length,
-        isArchived: false // ✅ DOMYŚLNIE NIE ZARCHIWIZOWANE
+        isArchived: false
       };
       await addDoc(collection(db, "adn_events"), eventData);
-      setEventTitle(''); setEventDesc(''); setEventDate(''); setSelectedImageBase64(null);
+      
+      // Reset stanów
+      setEventTitle(''); 
+      setEventDesc(''); 
+      setEventDate(''); 
+      setSelectedImageBase64(null);
+      setSelectedImagesBase64([]);  // 🆕 Resetuj galerię
       setShowEventCreator(false);
     } catch (e) {
       console.error("Błąd tworzenia wydarzenia:", e);
@@ -344,27 +383,25 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
     }
   };
 
-const toggleArchiveEvent = async (eventId: string, currentStatus: boolean) => {
-  try {
-    const eventRef = doc(db, "adn_events", eventId);
-    
-    // ✅ Jeśli PRZYWRACAMY z archiwum (currentStatus === true)
-    if (currentStatus) {
-      await updateDoc(eventRef, {
-        isArchived: false,
-        timestamp: Date.now()  // ← RESETUJ CZAS!
-      });
-    } else {
-      // Jeśli ARCHIWIZUJEMY, NIE zmieniaj timestamp
-      await updateDoc(eventRef, {
-        isArchived: true
-      });
+  const toggleArchiveEvent = async (eventId: string, currentStatus: boolean) => {
+    try {
+      const eventRef = doc(db, "adn_events", eventId);
+      
+      if (currentStatus) {
+        await updateDoc(eventRef, {
+          isArchived: false,
+          timestamp: Date.now()
+        });
+      } else {
+        await updateDoc(eventRef, {
+          isArchived: true
+        });
+      }
+    } catch (e) {
+      console.error("Błąd archiwizacji:", e);
+      alert("Nie udało się zmienić statusu archiwum.");
     }
-  } catch (e) {
-    console.error("Błąd archiwizacji:", e);
-    alert("Nie udało się zmienić statusu archiwum.");
-  }
-};
+  };
 
   const handleUpdateUserName = async (targetCode: string) => {
     if (!editUserFirstName.trim() || !editUserLastName.trim()) return;
@@ -376,7 +413,6 @@ const toggleArchiveEvent = async (eventId: string, currentStatus: boolean) => {
     setEditingUserId(null);
   };
 
-  // ✅ FILTRACJA WYDARZEŃ
   const activeEvents = adnEvents.filter(e => !e.isArchived);
   const archivedEvents = adnEvents.filter(e => e.isArchived);
   const displayedEvents = showArchived ? archivedEvents : activeEvents;
@@ -495,26 +531,74 @@ const toggleArchiveEvent = async (eventId: string, currentStatus: boolean) => {
                <AnimatePresence>
                  {showEventCreator && (
                    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="fixed inset-0 z-[150] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-                     <div className="bg-white w-full max-w-2xl p-8 rounded-sm shadow-2xl space-y-6">
+                     <div className="bg-white w-full max-w-2xl p-8 rounded-sm shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
                        <div className="flex justify-between items-center border-b border-[#1A0F0A]/5 pb-4">
                          <h3 className="font-serif italic text-2xl text-[#1A0F0A]">Nowe Wydarzenie</h3>
-                         <button onClick={()=>setShowEventCreator(false)} className="text-[#1A0F0A]/40 hover:text-[#1A0F0A] transition-colors"><X size={24}/></button>
+                         <button onClick={()=>{setShowEventCreator(false); setSelectedImagesBase64([]);}} className="text-[#1A0F0A]/40 hover:text-[#1A0F0A] transition-colors"><X size={24}/></button>
                        </div>
                        <div className="grid gap-6">
                          <input value={eventTitle} onChange={e=>setEventTitle(e.target.value)} placeholder="Tytuł wydarzenia..." className="w-full bg-[#FAF9F6] border border-[#1A0F0A]/10 p-4 font-serif italic text-lg outline-none focus:border-[#1A0F0A]/30 rounded-sm text-[#1A0F0A]" />
                          <textarea value={eventDesc} onChange={e=>setEventDesc(e.target.value)} placeholder="Opis wydarzenia..." className="w-full bg-[#FAF9F6] border border-[#1A0F0A]/10 p-4 text-sm outline-none focus:border-[#1A0F0A]/30 rounded-sm min-h-[150px] text-[#1A0F0A]" />
-                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="space-y-1">
-                               <label className="text-[10px] uppercase tracking-widest text-[#1A0F0A]/40 font-bold ml-1">Data</label>
-                               <input value={eventDate} onChange={e=>setEventDate(e.target.value)} placeholder="np. 12 marca, 19:00" className="w-full bg-[#FAF9F6] border border-[#1A0F0A]/10 p-3 text-sm rounded-sm outline-none text-[#1A0F0A]" />
-                            </div>
-                            <div className="space-y-1">
-                               <label className="text-[10px] uppercase tracking-widest text-[#1A0F0A]/40 font-bold ml-1">Zdjęcie (opcjonalnie)</label>
-                               <label className="w-full h-[46px] border border-[#1A0F0A]/10 flex items-center justify-center cursor-pointer hover:bg-black/5 transition-all rounded-sm text-[10px] uppercase font-bold text-[#1A0F0A]">
-                                  {selectedImageBase64 ? "Zdjęcie wybrane ✓" : "Wybierz plik"}
-                                  <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
-                               </label>
-                            </div>
+                         <div className="space-y-1">
+                            <label className="text-[10px] uppercase tracking-widest text-[#1A0F0A]/40 font-bold ml-1">Data</label>
+                            <input value={eventDate} onChange={e=>setEventDate(e.target.value)} placeholder="np. 12 marca, 19:00" className="w-full bg-[#FAF9F6] border border-[#1A0F0A]/10 p-3 text-sm rounded-sm outline-none text-[#1A0F0A]" />
+                         </div>
+                         
+                         {/* 🆕 SEKCJA WIELU ZDJĘĆ */}
+                         <div className="space-y-3">
+                           <label className="text-[10px] uppercase tracking-widest text-[#1A0F0A]/40 font-bold ml-1">
+                             Zdjęcia wydarzenia (opcjonalnie)
+                           </label>
+                           
+                           <label className="w-full h-[46px] border-2 border-dashed border-[#1A0F0A]/20 flex items-center justify-center cursor-pointer hover:bg-[#1A0F0A]/5 transition-all rounded-sm text-[10px] uppercase font-bold text-[#1A0F0A]">
+                             {isProcessingImage ? (
+                               <span className="flex items-center gap-2">
+                                 <Loader2 size={16} className="animate-spin" /> Przetwarzanie...
+                               </span>
+                             ) : (
+                               <span className="flex items-center gap-2">
+                                 <Plus size={16} /> Dodaj zdjęcia ({selectedImagesBase64.length})
+                               </span>
+                             )}
+                             <input 
+                               type="file" 
+                               className="hidden" 
+                               accept="image/*" 
+                               multiple 
+                               onChange={handleMultipleFilesChange} 
+                             />
+                           </label>
+                           
+                           {/* Podgląd wybranych zdjęć */}
+                           {selectedImagesBase64.length > 0 && (
+                             <div className="grid grid-cols-3 gap-2 mt-3">
+                               {selectedImagesBase64.map((img, idx) => (
+                                 <div key={idx} className="relative group">
+                                   <img 
+                                     src={img} 
+                                     alt={`Zdjęcie ${idx + 1}`}
+                                     className="w-full h-24 object-cover rounded-sm border border-[#1A0F0A]/10"
+                                   />
+                                   <button
+                                     type="button"
+                                     onClick={() => removeImageFromGallery(idx)}
+                                     className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                   >
+                                     <X size={12} />
+                                   </button>
+                                   {idx === 0 && (
+                                     <div className="absolute bottom-1 left-1 bg-[#966F33] text-white text-[8px] px-2 py-1 rounded-sm font-bold">
+                                       GŁÓWNE
+                                     </div>
+                                   )}
+                                 </div>
+                               ))}
+                             </div>
+                           )}
+                           
+                           <p className="text-[9px] text-[#1A0F0A]/40 italic mt-2">
+                             Pierwsze zdjęcie będzie głównym. Możesz dodać wiele zdjęć jednocześnie.
+                           </p>
                          </div>
                        </div>
                        <button 
@@ -619,7 +703,6 @@ const toggleArchiveEvent = async (eventId: string, currentStatus: boolean) => {
                           <h3 className="text-xl md:text-2xl font-serif italic text-[#1A0F0A]">
                             {showArchived ? 'Archiwum Wydarzeń' : 'Wydarzenia Premium'}
                           </h3>
-                          {/* ✅ PRZEŁĄCZNIK AKTYWNE/ARCHIWUM */}
                           <button 
                             onClick={() => setShowArchived(!showArchived)}
                             className="flex items-center gap-2 px-4 py-2 bg-white border border-[#1A0F0A]/10 rounded-sm text-[10px] uppercase tracking-widest font-bold text-[#1A0F0A]/60 hover:text-[#1A0F0A] hover:bg-[#1A0F0A]/5 transition-all"
@@ -644,7 +727,6 @@ const toggleArchiveEvent = async (eventId: string, currentStatus: boolean) => {
                               </div>
                             </div>
                             <div className="flex items-center gap-2 shrink-0">
-                              {/* ✅ STRZAŁKI - TYLKO DLA WYŚWIETLANEJ LISTY */}
                               <button 
                                 onClick={async ()=>{ 
                                   if(i > 0) { 
@@ -673,7 +755,6 @@ const toggleArchiveEvent = async (eventId: string, currentStatus: boolean) => {
                                 <ArrowDown size={16}/>
                               </button>
                               
-                              {/* ✅ ARCHIWIZUJ/PRZYWRÓĆ */}
                               <button 
                                 onClick={() => toggleArchiveEvent(ev.id, ev.isArchived || false)} 
                                 className="p-2 text-[#1A0F0A]/20 hover:text-amber-600 hover:bg-amber-50 rounded-sm transition-all"
