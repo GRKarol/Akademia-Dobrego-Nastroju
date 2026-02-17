@@ -13,6 +13,7 @@ interface AdnEvent {
   image?: string;
   timestamp: number;
   order: number;
+  isArchived?: boolean;
 }
 
 interface EventsViewProps {
@@ -23,6 +24,7 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
   const [adnEvents, setAdnEvents] = useState<AdnEvent[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [direction, setDirection] = useState(0);
+  const [expandedArchiveIds, setExpandedArchiveIds] = useState<Set<string>>(new Set());
   
   // Scroll locking logic during entry animation - extended to 1s as requested
   useEffect(() => {
@@ -45,18 +47,18 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
     return () => unsub();
   }, []);
 
-const FOUR_WEEKS_MS = 2419200000;
-const now = Date.now();
+  const FOUR_WEEKS_MS = 2419200000;
+  const now = Date.now();
 
-// ✅ Aktywne: NIE zarchiwizowane ORAZ młodsze niż 4 tygodnie
-const activeEvents = adnEvents.filter(e => 
-  !e.isArchived && (now - e.timestamp < FOUR_WEEKS_MS)
-);
+  // ✅ Aktywne: NIE zarchiwizowane ORAZ młodsze niż 4 tygodnie
+  const activeEvents = adnEvents.filter(e => 
+    !e.isArchived && (now - e.timestamp < FOUR_WEEKS_MS)
+  );
 
-// ✅ Archiwalne: zarchiwizowane ALBO starsze niż 4 tygodnie
-const archivedEvents = adnEvents.filter(e => 
-  e.isArchived || (now - e.timestamp >= FOUR_WEEKS_MS)
-);
+  // ✅ Archiwalne: zarchiwizowane ALBO starsze niż 4 tygodnie
+  const archivedEvents = adnEvents.filter(e => 
+    e.isArchived || (now - e.timestamp >= FOUR_WEEKS_MS)
+  );
 
   const nextEvent = () => {
     setDirection(1);
@@ -155,62 +157,67 @@ const archivedEvents = adnEvents.filter(e =>
                     className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-16 items-start bg-white border border-[#8B4513]/10 p-6 md:p-12 rounded-sm shadow-xl cursor-grab active:cursor-grabbing"
                   >
                     <div className="space-y-6 select-none">
-                <div className="w-full pr-2 md:pr-4 lg:pr-6">
-  <h3 
-    className="font-serif text-[#2C1810] italic font-bold uppercase"
-    style={{
-      fontSize: (() => {
-        const title = activeEvents[activeIndex].title;
-        const words = title.split(' ');
-        const longestWord = Math.max(...words.map(w => w.length));
-        const totalLength = title.length;
-        
-        let maxSize = 4;
-        if (longestWord > 18) maxSize = 1.5;
-        else if (longestWord > 15) maxSize = 2;
-        else if (longestWord > 12) maxSize = 2.5;
-        else if (longestWord > 10) maxSize = 3;
-        else if (longestWord > 8) maxSize = 3.25;
-        
-        if (totalLength > 50) maxSize *= 0.85;
-        else if (totalLength > 40) maxSize *= 0.9;
-        
-        return `clamp(1.25rem, ${maxSize * 0.8}vw, ${maxSize}rem)`;
-      })(),
-      lineHeight: '1.15',
-      maxWidth: '100%',
-      wordBreak: 'normal',              // ✅ ZMIENIONE: nie łam słów
-      overflowWrap: 'normal',           // ✅ ZMIENIONE: nie wrap w połowie
-      hyphens: 'none',                  // ✅ ZMIENIONE: wyłącz dzielenie
-      whiteSpace: 'normal'              // ✅ DODANE: normalne zawijanie
-    }}
-  >
-    {activeEvents[activeIndex].title}
-  </h3>
-</div>
-
+                      <div className="flex items-center space-x-4">
+                        <div className="px-3 py-1 border border-[#966F33]/20 text-[#966F33] text-[9px] uppercase tracking-widest font-bold">Wydarzenie</div>
+                      </div>
+                      
+                      <div className="w-full pr-2 md:pr-4 lg:pr-6">
+                        <h3 
+                          className="font-serif text-[#2C1810] italic font-bold uppercase"
+                          style={{
+                            fontSize: (() => {
+                              const title = activeEvents[activeIndex].title;
+                              const words = title.split(' ');
+                              const longestWord = Math.max(...words.map(w => w.length));
+                              const totalLength = title.length;
+                              
+                              let maxSize = 4;
+                              if (longestWord > 18) maxSize = 1.5;
+                              else if (longestWord > 15) maxSize = 2;
+                              else if (longestWord > 12) maxSize = 2.5;
+                              else if (longestWord > 10) maxSize = 3;
+                              else if (longestWord > 8) maxSize = 3.25;
+                              
+                              if (totalLength > 50) maxSize *= 0.85;
+                              else if (totalLength > 40) maxSize *= 0.9;
+                              
+                              return `clamp(1.25rem, ${maxSize * 0.8}vw, ${maxSize}rem)`;
+                            })(),
+                            lineHeight: '1.15',
+                            maxWidth: '100%',
+                            wordBreak: 'normal',
+                            overflowWrap: 'normal',
+                            hyphens: 'none',
+                            whiteSpace: 'normal'
+                          }}
+                        >
+                          {activeEvents[activeIndex].title}
+                        </h3>
+                      </div>
 
                       <div className="text-[#2C1810]/60 font-light text-base md:text-lg leading-relaxed whitespace-pre-wrap">{activeEvents[activeIndex].description}</div>
+                      
                       <div className="pt-8 flex flex-wrap gap-8 border-t border-[#2C1810]/10">
-                       <div className="flex items-center space-x-3 group/info">
-  <Calendar size={20} className="text-[#966F33]" />
-  <span className="font-serif italic text-sm md:text-lg text-[#2C1810]/80">{activeEvents[activeIndex].date}</span>
-</div>
+                        <div className="flex items-center space-x-3 group/info">
+                          <Calendar size={20} className="text-[#966F33]" />
+                          <span className="font-serif italic text-sm md:text-lg text-[#2C1810]/80">{activeEvents[activeIndex].date}</span>
+                        </div>
                         <div className="flex items-center space-x-3 group/info">
                           <MapPin size={20} className="text-[#966F33]" />
                           <span className="font-serif italic text-sm md:text-lg text-[#2C1810]/80">{activeEvents[activeIndex].location}</span>
                         </div>
                       </div>
                     </div>
-                 {activeEvents[activeIndex].image && (
-  <div className="relative w-full aspect-square md:aspect-auto h-auto overflow-hidden rounded-sm border border-[#2C1810]/5 bg-white p-2">
-    <img 
-      src={activeEvents[activeIndex].image} 
-      className="w-full h-full object-cover block rounded-sm grayscale-[0.2] hover:grayscale-0 transition-all duration-700" 
-      alt={activeEvents[activeIndex].title}
-    />
-  </div>
-)}
+                    
+                    {activeEvents[activeIndex].image && (
+                      <div className="relative w-full aspect-square md:aspect-auto h-auto overflow-hidden rounded-sm border border-[#2C1810]/5 bg-white p-2">
+                        <img 
+                          src={activeEvents[activeIndex].image} 
+                          className="w-full h-full object-cover block rounded-sm grayscale-[0.2] hover:grayscale-0 transition-all duration-700" 
+                          alt={activeEvents[activeIndex].title}
+                        />
+                      </div>
+                    )}
                   </motion.div>
                 </AnimatePresence>
               </div>
@@ -257,44 +264,90 @@ const archivedEvents = adnEvents.filter(e =>
             <div className="max-h-[600px] overflow-y-auto custom-scrollbar p-6 md:p-10 bg-white">
               {archivedEvents.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-        {archivedEvents.map((ev, i) => (
-  <motion.div 
-    key={ev.id} 
-    initial={{ opacity: 0, y: 20 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    transition={{ delay: i * 0.05 }}
-    className="group bg-[#FAF9F6] border border-[#8B4513]/10 rounded-sm hover:border-[#966F33]/40 hover:shadow-xl transition-all duration-500 relative overflow-hidden"
-  >
-    <div className="absolute inset-0 bg-gradient-to-br from-[#966F33]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-    
-    {/* ✅ NOWA SEKCJA ZDJĘĆ */}
-    {ev.image && (
-      <div className="relative w-full h-48 overflow-hidden">
-        <img 
-          src={ev.image} 
-          alt={ev.title}
-          className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-700"
-        />
-      </div>
-    )}
-    
-    <div className="relative z-10 p-8">
-      <div className="flex justify-between items-start mb-6">
-        <p className="text-[#966F33]/60 text-[9px] uppercase tracking-widest font-bold border-l-2 border-[#966F33]/30 pl-3">{ev.date}</p>
-        <History size={14} className="text-[#2C1810]/10 group-hover:text-[#966F33]/40 transition-colors" />
-      </div>
-      
-      <h4 className="font-serif text-2xl text-[#2C1810]/80 italic mb-4 group-hover:text-[#2C1810] transition-colors uppercase font-bold">{ev.title}</h4>
-      <p className="text-[#2C1810]/40 text-sm font-light leading-relaxed line-clamp-3 italic group-hover:text-[#2C1810]/70 transition-colors">{ev.description}</p>
-      
-      <div className="mt-8 flex items-center space-x-4 opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0 duration-500">
-        <div className="h-px flex-1 bg-[#2C1810]/10" />
-        <span className="text-[8px] uppercase tracking-[0.3em] text-[#966F33]/50">Zapis archiwalny</span>
-      </div>
-    </div>
-  </motion.div>
-))}
-
+                  {archivedEvents.map((ev, i) => {
+                    const isExpanded = expandedArchiveIds.has(ev.id);
+                    
+                    const toggleExpand = (e: React.MouseEvent) => {
+                      e.stopPropagation();
+                      setExpandedArchiveIds(prev => {
+                        const newSet = new Set(prev);
+                        if (newSet.has(ev.id)) {
+                          newSet.delete(ev.id);
+                        } else {
+                          newSet.add(ev.id);
+                        }
+                        return newSet;
+                      });
+                    };
+                    
+                    return (
+                      <motion.div 
+                        key={ev.id} 
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.05 }}
+                        className="group bg-[#FAF9F6] border border-[#8B4513]/10 rounded-sm hover:border-[#966F33]/40 hover:shadow-xl transition-all duration-500 relative overflow-hidden"
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#966F33]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        
+                        {/* ZDJĘCIE - pełne gdy rozwinięte */}
+                        {ev.image && (
+                          <div 
+                            className={`relative w-full overflow-hidden transition-all duration-500 ${
+                              isExpanded ? 'h-auto max-h-[600px]' : 'h-48'
+                            }`}
+                          >
+                            <img 
+                              src={ev.image} 
+                              alt={ev.title}
+                              className={`w-full ${isExpanded ? 'h-auto' : 'h-full'} object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-700`}
+                            />
+                            {!isExpanded && (
+                              <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#FAF9F6] to-transparent pointer-events-none" />
+                            )}
+                          </div>
+                        )}
+                        
+                        <div className="relative z-10 p-8">
+                          <div className="flex justify-between items-start mb-6">
+                            <p className="text-[#966F33]/60 text-[9px] uppercase tracking-widest font-bold border-l-2 border-[#966F33]/30 pl-3">
+                              {ev.date}
+                            </p>
+                            <History size={14} className="text-[#2C1810]/10 group-hover:text-[#966F33]/40 transition-colors" />
+                          </div>
+                          
+                          <h4 className="font-serif text-2xl text-[#2C1810]/80 italic mb-4 group-hover:text-[#2C1810] transition-colors uppercase font-bold">
+                            {ev.title}
+                          </h4>
+                          
+                          {/* TEKST - pełny gdy rozwinięty */}
+                          <p 
+                            className={`text-[#2C1810]/40 text-sm font-light leading-relaxed italic group-hover:text-[#2C1810]/70 transition-all whitespace-pre-wrap ${
+                              isExpanded ? '' : 'line-clamp-3'
+                            }`}
+                          >
+                            {ev.description}
+                          </p>
+                          
+                          {/* PRZYCISK ROZWIŃ/ZWIŃ */}
+                          <button
+                            onClick={toggleExpand}
+                            className="mt-8 w-full flex items-center justify-center space-x-3 text-[#966F33] text-[9px] uppercase tracking-[0.3em] font-bold hover:text-[#8B4513] transition-colors"
+                          >
+                            <div className="h-px flex-1 bg-[#2C1810]/10" />
+                            <span className="px-6 py-2 border border-[#966F33]/20 rounded-sm hover:bg-[#966F33]/5 transition-all flex items-center gap-2">
+                              {isExpanded ? (
+                                <>Zwiń <span className="text-sm">↑</span></>
+                              ) : (
+                                <>Zobacz więcej <span className="text-sm">↓</span></>
+                              )}
+                            </span>
+                            <div className="h-px flex-1 bg-[#2C1810]/10" />
+                          </button>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="w-full py-32 flex flex-col items-center justify-center text-center space-y-4 opacity-20">
