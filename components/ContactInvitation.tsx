@@ -176,7 +176,7 @@ useEffect(() => {
                 <div className="flex items-center gap-3">
                   {/* EMAIL - klikalne */}
                   <a 
-                    href="mailto:akademiadobregonastroju@gmail.com?subject=Kontakt+ze+strony+Akademii&body=Dzień+dobry,%0D%0A%0D%0A"
+                    href="mailto:akademiadobregonastroju@gmail.com?subject=Współpraca&body=Dzień dobry,%0D%0A%0D%0A"
                     className="text-xs sm:text-sm md:text-base lg:text-lg font-serif text-[#121212] block break-all leading-snug hover:text-[#8B4513] transition-colors flex-1"
                   >
                     akademiadobregonastroju@gmail.com
