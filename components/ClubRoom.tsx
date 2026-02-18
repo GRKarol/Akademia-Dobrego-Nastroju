@@ -7,7 +7,7 @@ import {
   Sparkles, Trash2, Key, Shield, ArrowLeft, Save, ArrowRight,
   Archive, ArchiveRestore
 } from 'lucide-react';
-import { db } from '../lib/firebase';
+import { db, authReady } from '../lib/firebase';  // ✅ Import authReady
 import { 
   collection, query, onSnapshot, orderBy, addDoc, updateDoc, 
   doc, deleteDoc, setDoc, getDoc, getDocs, limit, arrayUnion 
@@ -46,7 +46,7 @@ interface AdnEvent {
   date: string;
   location: string;
   image?: string;
-  images?: string[];        // 🆕 Tablica zdjęć
+  images?: string[];
   timestamp: number;
   order: number;
   isArchived?: boolean;
@@ -102,7 +102,7 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
   const [pollQuestion, setPollQuestion] = useState('');
   const [pollOptions, setPollOptions] = useState(['', '']);
   const [selectedImageBase64, setSelectedImageBase64] = useState<string | null>(null);
-  const [selectedImagesBase64, setSelectedImagesBase64] = useState<string[]>([]);  // 🆕 Wiele zdjęć
+  const [selectedImagesBase64, setSelectedImagesBase64] = useState<string[]>([]);
   const [imageCaption, setImageCaption] = useState('');
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [eventTitle, setEventTitle] = useState('');
@@ -234,7 +234,6 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
     }
   };
 
-  // 🆕 NOWA FUNKCJA: Obsługa wielu zdjęć
   const handleMultipleFilesChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -260,12 +259,13 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
     setIsProcessingImage(false);
   };
 
-  // 🆕 FUNKCJA: Usuwanie pojedynczego zdjęcia z galerii
   const removeImageFromGallery = (index: number) => {
     setSelectedImagesBase64(prev => prev.filter((_, i) => i !== index));
   };
 
   const sendMessage = async (type: 'text' | 'image' | 'poll' = 'text', extra?: any) => {
+    await authReady;  // ✅ Czekaj na zalogowanie
+    
     if (!user) return;
     if (type === 'text' && !inputText.trim()) return;
     
@@ -286,12 +286,16 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
   };
 
   const handleEditMessage = async (id: string) => {
+    await authReady;  // ✅ Czekaj na zalogowanie
+    
     const msgRef = doc(db, "messages", id);
     await updateDoc(msgRef, { text: editInput, isEdited: true });
     setEditingMessageId(null);
   };
 
   const performDeletion = async () => {
+    await authReady;  // ✅ Czekaj na zalogowanie
+    
     if (!itemToDelete) return;
     const { id, type } = itemToDelete;
     
@@ -309,6 +313,8 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
   };
 
   const handleVote = async (msgId: string, optIdx: number) => {
+    await authReady;  // ✅ Czekaj na zalogowanie
+    
     if (!user) return;
     const msg = messages.find(m => m.id === msgId);
     if (!msg || msg.pollVotes?.some(v => v.userCode === user.code)) return;
@@ -329,6 +335,8 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
   };
 
   const createAdnEvent = async () => {
+    await authReady;  // ✅ Czekaj na zalogowanie
+    
     if (!eventTitle || !eventDesc || isCreatingEvent) return;
     setIsCreatingEvent(true);
     try {
@@ -337,20 +345,19 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
         description: eventDesc,
         date: eventDate || "Wkrótce w Akademii",
         location: "Kręta 23, Kłobuck",
-        image: selectedImagesBase64[0] || selectedImageBase64 || null,        // Główne zdjęcie = pierwsze
-        images: selectedImagesBase64.length > 0 ? selectedImagesBase64 : [],  // 🆕 Galeria
+        image: selectedImagesBase64[0] || selectedImageBase64 || null,
+        images: selectedImagesBase64.length > 0 ? selectedImagesBase64 : [],
         timestamp: Date.now(),
         order: adnEvents.length,
         isArchived: false
       };
       await addDoc(collection(db, "adn_events"), eventData);
       
-      // Reset stanów
       setEventTitle(''); 
       setEventDesc(''); 
       setEventDate(''); 
       setSelectedImageBase64(null);
-      setSelectedImagesBase64([]);  // 🆕 Resetuj galerię
+      setSelectedImagesBase64([]);
       setShowEventCreator(false);
     } catch (e) {
       console.error("Błąd tworzenia wydarzenia:", e);
@@ -361,6 +368,8 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
   };
 
   const updateAdnEvent = async (eventId: string) => {
+    await authReady;  // ✅ Czekaj na zalogowanie
+    
     if (!editEventTitle || !editEventDesc) return;
     
     try {
@@ -384,6 +393,8 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
   };
 
   const toggleArchiveEvent = async (eventId: string, currentStatus: boolean) => {
+    await authReady;  // ✅ Czekaj na zalogowanie
+    
     try {
       const eventRef = doc(db, "adn_events", eventId);
       
@@ -404,6 +415,8 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
   };
 
   const handleUpdateUserName = async (targetCode: string) => {
+    await authReady;  // ✅ Czekaj na zalogowanie
+    
     if (!editUserFirstName.trim() || !editUserLastName.trim()) return;
     const userRef = doc(db, "adn_users", targetCode);
     await updateDoc(userRef, {
@@ -424,6 +437,8 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
           <h2 className="font-serif text-3xl text-[#966F33] italic">Przedstaw się.</h2>
           <form onSubmit={async (e) => {
             e.preventDefault();
+            await authReady;  // ✅ Czekaj na zalogowanie
+            
             try {
               const snap = await getDocs(collection(db, "access_codes"));
               const codes = snap.docs.map(d => d.data() as AccessCode);
@@ -544,7 +559,6 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
                             <input value={eventDate} onChange={e=>setEventDate(e.target.value)} placeholder="np. 12 marca, 19:00" className="w-full bg-[#FAF9F6] border border-[#1A0F0A]/10 p-3 text-sm rounded-sm outline-none text-[#1A0F0A]" />
                          </div>
                          
-                         {/* 🆕 SEKCJA WIELU ZDJĘĆ */}
                          <div className="space-y-3">
                            <label className="text-[10px] uppercase tracking-widest text-[#1A0F0A]/40 font-bold ml-1">
                              Zdjęcia wydarzenia (opcjonalnie)
@@ -569,7 +583,6 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
                              />
                            </label>
                            
-                           {/* Podgląd wybranych zdjęć */}
                            {selectedImagesBase64.length > 0 && (
                              <div className="grid grid-cols-3 gap-2 mt-3">
                                {selectedImagesBase64.map((img, idx) => (
@@ -729,6 +742,7 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
                             <div className="flex items-center gap-2 shrink-0">
                               <button 
                                 onClick={async ()=>{ 
+                                  await authReady;  // ✅ Czekaj na zalogowanie
                                   if(i > 0) { 
                                     const prev = displayedEvents[i-1]; 
                                     await updateDoc(doc(db, "adn_events", ev.id), { order: prev.order }); 
@@ -743,6 +757,7 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
                               
                               <button 
                                 onClick={async ()=>{ 
+                                  await authReady;  // ✅ Czekaj na zalogowanie
                                   if(i < displayedEvents.length - 1) { 
                                     const next = displayedEvents[i+1]; 
                                     await updateDoc(doc(db, "adn_events", ev.id), { order: next.order }); 
@@ -799,7 +814,12 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
                           <option value="member">Klubowicz</option>
                           <option value="admin">Admin</option>
                         </select>
-                        <button onClick={async ()=>{ if(!newCodeInput) return; await addDoc(collection(db, "access_codes"), { value: newCodeInput.toLowerCase().trim(), role: newCodeRole }); setNewCodeInput(''); }} className="bg-[#1A0F0A] text-white px-8 py-3 sm:py-0 font-bold uppercase text-[10px] tracking-widest shrink-0 rounded-sm shadow-md transition-all hover:bg-[#331c12]">Dodaj</button>
+                        <button onClick={async ()=>{ 
+                          await authReady;  // ✅ Czekaj na zalogowanie
+                          if(!newCodeInput) return; 
+                          await addDoc(collection(db, "access_codes"), { value: newCodeInput.toLowerCase().trim(), role: newCodeRole }); 
+                          setNewCodeInput(''); 
+                        }} className="bg-[#1A0F0A] text-white px-8 py-3 sm:py-0 font-bold uppercase text-[10px] tracking-widest shrink-0 rounded-sm shadow-md transition-all hover:bg-[#331c12]">Dodaj</button>
                       </div>
                       <div className="grid gap-3">
                         {validCodes.map(c => (
@@ -809,7 +829,10 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
                               <span className="text-[#1A0F0A] font-mono text-sm truncate font-bold">{c.value}</span> 
                               <span className="text-[10px] uppercase text-[#1A0F0A]/40 shrink-0 font-bold">({c.role})</span>
                             </div>
-                            <button onClick={async ()=>{ if(c.id) await deleteDoc(doc(db, "access_codes", c.id)); }} className="text-[#1A0F0A]/20 hover:text-red-500 p-1 transition-colors"><Trash2 size={16}/></button>
+                            <button onClick={async ()=>{ 
+                              await authReady;  // ✅ Czekaj na zalogowanie
+                              if(c.id) await deleteDoc(doc(db, "access_codes", c.id)); 
+                            }} className="text-[#1A0F0A]/20 hover:text-red-500 p-1 transition-colors"><Trash2 size={16}/></button>
                           </div>
                         ))}
                       </div>
@@ -838,7 +861,10 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
                                   </div>
                                   <div className="flex items-center gap-2 shrink-0">
                                     <button onClick={()=>{ setEditingUserId(u.code); setEditUserFirstName(u.firstName); setEditUserLastName(u.lastName); }} className="text-[#1A0F0A]/20 hover:text-[#1A0F0A] p-1 transition-colors"><Edit2 size={16}/></button>
-                                    <button onClick={async ()=>{ await deleteDoc(doc(db, "adn_users", u.code)); }} className="text-[#1A0F0A]/20 hover:text-red-500 p-1 transition-colors"><X size={16}/></button>
+                                    <button onClick={async ()=>{ 
+                                      await authReady;  // ✅ Czekaj na zalogowanie
+                                      await deleteDoc(doc(db, "adn_users", u.code)); 
+                                    }} className="text-[#1A0F0A]/20 hover:text-red-500 p-1 transition-colors"><X size={16}/></button>
                                   </div>
                                 </>
                               )}
@@ -906,7 +932,10 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
 
                         <div className={`mt-4 pt-3 border-t border-[#1A0F0A]/5 flex flex-wrap items-center gap-6 transition-opacity ${user.isAdmin ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
                           {user.isAdmin && (
-                            <button onClick={async ()=>{ await updateDoc(doc(db, "messages", m.id), { isAnnouncement: !m.isAnnouncement }); }} className={`flex items-center gap-1.5 text-[8px] uppercase tracking-widest font-bold ${m.isAnnouncement ? 'text-[#1A0F0A]' : 'text-[#1A0F0A]/20 hover:text-[#1A0F0A]'} transition-all`}>
+                            <button onClick={async ()=>{ 
+                              await authReady;  // ✅ Czekaj na zalogowanie
+                              await updateDoc(doc(db, "messages", m.id), { isAnnouncement: !m.isAnnouncement }); 
+                            }} className={`flex items-center gap-1.5 text-[8px] uppercase tracking-widest font-bold ${m.isAnnouncement ? 'text-[#1A0F0A]' : 'text-[#1A0F0A]/20 hover:text-[#1A0F0A]'} transition-all`}>
                               <Megaphone size={12} className="text-[#1A0F0A]" /> <span>{m.isAnnouncement ? 'Odepnij' : 'Przypnij'}</span>
                             </button>
                           )}
