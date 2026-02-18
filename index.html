@@ -3,19 +3,53 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Akademia Dobrego Nastroju | Cyfrowy Azyl</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    
+    <!-- SEO Meta Tags -->
+    <title>Akademia Dobrego Nastroju – Miejsce kultury dla świadomych</title>
+    <meta name="description" content="Ekskluzywna przestrzeń kulturalna w Kłobucku. Wydarzenia muzyczne, spotkania artystyczne i społeczność ludzi świadomych. Dołącz do Klubu Nuty!" />
+    <meta name="keywords" content="Akademia Dobrego Nastroju, Kłobuck, kultura, muzyka, wydarzenia, klub, Klub Nuty, Kręta 23" />
+    <meta name="author" content="Akademia Dobrego Nastroju" />
+    <meta name="robots" content="index, follow" />
+    
+    <!-- Open Graph (Facebook, LinkedIn) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://akademia-dobrego-nastroju.vercel.app/" />
+    <meta property="og:title" content="Akademia Dobrego Nastroju – Miejsce kultury dla świadomych" />
+    <meta property="og:description" content="Ekskluzywna przestrzeń kulturalna w Kłobucku. Wydarzenia muzyczne, spotkania artystyczne i społeczność ludzi świadomych." />
+    <meta property="og:image" content="https://akademia-dobrego-nastroju.vercel.app/budynek.jpg" />
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://akademia-dobrego-nastroju.vercel.app/" />
+    <meta name="twitter:title" content="Akademia Dobrego Nastroju" />
+    <meta name="twitter:description" content="Miejsce kultury dla świadomych – Kłobuck, Kręta 23" />
+    <meta name="twitter:image" content="https://akademia-dobrego-nastroju.vercel.app/budynek.jpg" />
+    
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#EADDCA" />
+    
+    <!-- Tailwind CSS CDN (tymczasowo, potem zamienimy na lokalny) -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@200;300;400&display=swap" rel="stylesheet">
+    
     <!-- Preload obrazów dla NarrativeGallery -->
-<link rel="preload" as="image" href="/budynek.jpg">
-<link rel="preload" as="image" href="/kawiarnia.jpg">
-<link rel="preload" as="image" href="/sala.jpg">
-<link rel="preload" as="image" href="/kameralna.jpg">
-<link rel="preload" as="image" href="/detal.jpg">
-<link rel="preload" as="image" href="/zakamarki.jpg">
+    <link rel="preload" as="image" href="/budynek.jpg">
+    <link rel="preload" as="image" href="/kawiarnia.jpg">
+    <link rel="preload" as="image" href="/sala.jpg">
+    <link rel="preload" as="image" href="/kameralna.jpg">
+    <link rel="preload" as="image" href="/detal.jpg">
+    <link rel="preload" as="image" href="/zakamarki.jpg">
 
     <style>
       body {
@@ -76,6 +110,7 @@
         animation: marquee 20s linear infinite;
       }
     </style>
+    
     <script type="importmap">
 {
   "imports": {
@@ -97,6 +132,151 @@
 }
 </script>
   </head>
+  <body class="grain">
+    <div id="root"></div>
+    <script type="module" src="./index.tsx"></script>
+  </body>
+</html>
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    
+    <!-- SEO Meta Tags -->
+    <title>Akademia Dobrego Nastroju – Miejsce kultury dla świadomych</title>
+    <meta name="description" content="Ekskluzywna przestrzeń kulturalna w Kłobucku. Wydarzenia muzyczne, spotkania artystyczne i społeczność ludzi świadomych. Dołącz do Klubu Nuty!" />
+    <meta name="keywords" content="Akademia Dobrego Nastroju, Kłobuck, kultura, muzyka, wydarzenia, klub, Klub Nuty, Kręta 23" />
+    <meta name="author" content="Akademia Dobrego Nastroju" />
+    <meta name="robots" content="index, follow" />
+    
+    <!-- Open Graph (Facebook, LinkedIn) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://akademia-dobrego-nastroju.vercel.app/" />
+    <meta property="og:title" content="Akademia Dobrego Nastroju – Miejsce kultury dla świadomych" />
+    <meta property="og:description" content="Ekskluzywna przestrzeń kulturalna w Kłobucku. Wydarzenia muzyczne, spotkania artystyczne i społeczność ludzi świadomych." />
+    <meta property="og:image" content="https://akademia-dobrego-nastroju.vercel.app/budynek.jpg" />
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://akademia-dobrego-nastroju.vercel.app/" />
+    <meta name="twitter:title" content="Akademia Dobrego Nastroju" />
+    <meta name="twitter:description" content="Miejsce kultury dla świadomych – Kłobuck, Kręta 23" />
+    <meta name="twitter:image" content="https://akademia-dobrego-nastroju.vercel.app/budynek.jpg" />
+    
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#EADDCA" />
+    
+    <!-- Tailwind CSS CDN (tymczasowo, potem zamienimy na lokalny) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@200;300;400&display=swap" rel="stylesheet">
+    
+    <!-- Preload obrazów dla NarrativeGallery -->
+    <link rel="preload" as="image" href="/budynek.jpg">
+    <link rel="preload" as="image" href="/kawiarnia.jpg">
+    <link rel="preload" as="image" href="/sala.jpg">
+    <link rel="preload" as="image" href="/kameralna.jpg">
+    <link rel="preload" as="image" href="/detal.jpg">
+    <link rel="preload" as="image" href="/zakamarki.jpg">
+
+    <style>
+      body {
+        margin: 0;
+        background-color: #F5F5F5; /* Warm White */
+        color: #2C1810; /* Dark Mocha */
+        font-family: 'Inter', sans-serif;
+        overflow-x: hidden;
+      }
+      .font-serif { font-family: 'Playfair Display', serif; }
+      
+      /* Film Grain Overlay */
+      .grain::before {
+        content: "";
+        position: fixed;
+        top: -100%;
+        left: -100%;
+        width: 300%;
+        height: 300%;
+        background-image: url("https://upload.wikimedia.org/wikipedia/commons/7/76/1k_stop_noise.png");
+        opacity: 0.02;
+        pointer-events: none;
+        z-index: 9999;
+        animation: grain 8s steps(10) infinite;
+      }
+      @keyframes grain {
+        0%, 100% { transform:translate(0, 0) }
+        10% { transform:translate(-5%, -10%) }
+        20% { transform:translate(-15%, 5%) }
+        30% { transform:translate(7%, -25%) }
+        40% { transform:translate(-5%, 25%) }
+        50% { transform:translate(-15%, 10%) }
+        60% { transform:translate(15%, 0%) }
+        70% { transform:translate(0%, 15%) }
+        80% { transform:translate(3%, 35%) }
+        90% { transform:translate(-10%, 10%) }
+      }
+      
+      ::-webkit-scrollbar { width: 6px; }
+      ::-webkit-scrollbar-track { background: #F5F5F5; }
+      ::-webkit-scrollbar-thumb { background: #D4AF37; border-radius: 10px; }
+      
+      .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: #966F33; border-radius: 10px; }
+      
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+      /* Custom Marquee Animation */
+      @keyframes marquee {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+      }
+      .animate-marquee {
+        display: flex;
+        width: max-content;
+        animation: marquee 20s linear infinite;
+      }
+    </style>
+    
+    <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.0.0",
+    "react-dom": "https://esm.sh/react-dom@^19.0.0",
+    "react-dom/client": "https://esm.sh/react-dom@^19.0.0/client",
+    "react/jsx-runtime": "https://esm.sh/react@^19.0.0/jsx-runtime",
+    "framer-motion": "https://esm.sh/framer-motion@^11.11.17",
+    "lucide-react": "https://esm.sh/lucide-react@0.460.0",
+    "firebase/app": "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js",
+    "firebase/firestore": "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js",
+    "firebase/": "https://esm.sh/firebase@^11.1.0/",
+    "react/": "https://esm.sh/react@^19.0.0/",
+    "react-dom/": "https://esm.sh/react-dom@^19.0.0/",
+    "vite": "https://esm.sh/vite@^6.0.0",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^4.3.4",
+    "@google/genai": "https://esm.sh/@google/genai@^1.40.0"
+  }
+}
+</script>
+  </head>
+  <body class="grain">
+    <div id="root"></div>
+    <script type="module" src="./index.tsx"></script>
+  </body>
+</html>
+
   <body class="grain">
     <div id="root"></div>
     <script type="module" src="./index.tsx"></script>
