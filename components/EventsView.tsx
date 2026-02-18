@@ -11,7 +11,7 @@ interface AdnEvent {
   date: string;
   location: string;
   image?: string;
-  images?: string[];        // 🆕 Tablica zdjęć dla galerii
+  images?: string[];
   timestamp: number;
   order: number;
   isArchived?: boolean;
@@ -26,9 +26,9 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [direction, setDirection] = useState(0);
   const [expandedArchiveIds, setExpandedArchiveIds] = useState<Set<string>>(new Set());
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);  // 🆕 Stan dla galerii zdjęć
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [archiveImageIndexes, setArchiveImageIndexes] = useState<Record<string, number>>({});  // 🆕 Stan dla archiwum
   
-  // Scroll locking logic during entry animation - extended to 1s as requested
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     const timer = setTimeout(() => {
@@ -49,7 +49,6 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
     return () => unsub();
   }, []);
 
-  // 🆕 Reset indeksu zdjęcia gdy zmienia się wydarzenie
   useEffect(() => {
     setCurrentImageIndex(0);
   }, [activeIndex]);
@@ -57,12 +56,10 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
   const FOUR_WEEKS_MS = 2419200000;
   const now = Date.now();
 
-  // ✅ Aktywne: NIE zarchiwizowane ORAZ młodsze niż 4 tygodnie
   const activeEvents = adnEvents.filter(e => 
     !e.isArchived && (now - e.timestamp < FOUR_WEEKS_MS)
   );
 
-  // ✅ Archiwalne: zarchiwizowane ALBO starsze niż 4 tygodnie
   const archivedEvents = adnEvents.filter(e => 
     e.isArchived || (now - e.timestamp >= FOUR_WEEKS_MS)
   );
@@ -112,7 +109,6 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
     })
   };
 
-  // 🆕 FUNKCJA: Pobierz tablicę zdjęć dla wydarzenia
   const getEventImages = (event: AdnEvent): string[] => {
     if (event.images && event.images.length > 0) {
       return event.images;
@@ -227,9 +223,10 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
                       </div>
                     </div>
                     
-                    {/* 🆕 GALERIA ZDJĘĆ */}
+                    {/* GALERIA ZDJĘĆ - AKTYWNE WYDARZENIA */}
                     {(() => {
-                      const eventImages = getEventImages(activeEvents[activeIndex]);
+                      const currentEvent = activeEvents[activeIndex];
+                      const eventImages = getEventImages(currentEvent);
                       
                       if (eventImages.length === 0) return null;
                       
@@ -239,13 +236,11 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
                             <img 
                               src={eventImages[currentImageIndex]} 
                               className="w-full h-full object-cover block rounded-sm grayscale-[0.2] hover:grayscale-0 transition-all duration-700" 
-                              alt={`${activeEvents[activeIndex].title} - zdjęcie ${currentImageIndex + 1}`}
+                              alt={`${currentEvent.title} - zdjęcie ${currentImageIndex + 1}`}
                             />
                             
-                            {/* Kontrolki galerii - tylko gdy więcej niż 1 zdjęcie */}
                             {eventImages.length > 1 && (
                               <>
-                                {/* Przyciski poprzedni/następny */}
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -268,7 +263,6 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
                                   <ChevronRight size={20} className="text-[#2C1810]" />
                                 </button>
                                 
-                                {/* Wskaźniki (dots) */}
                                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/50 px-3 py-2 rounded-full">
                                   {eventImages.map((_, idx) => (
                                     <button
@@ -287,7 +281,6 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
                                   ))}
                                 </div>
                                 
-                                {/* Licznik zdjęć */}
                                 <div className="absolute top-4 right-4 bg-black/70 text-white px-3 py-1 rounded-full text-xs font-bold">
                                   {currentImageIndex + 1} / {eventImages.length}
                                 </div>
@@ -345,6 +338,8 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
                   {archivedEvents.map((ev, i) => {
                     const isExpanded = expandedArchiveIds.has(ev.id);
+                    const eventImages = getEventImages(ev);
+                    const currentArchiveIndex = archiveImageIndexes[ev.id] || 0;
                     
                     const toggleExpand = (e: React.MouseEvent) => {
                       e.stopPropagation();
@@ -369,89 +364,82 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
                       >
                         <div className="absolute inset-0 bg-gradient-to-br from-[#966F33]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                         
-               {/* 🆕 GALERIA ZDJĘĆ W ARCHIWUM */}
-{(() => {
-  const eventImages = ev.images && ev.images.length > 0 
-    ? ev.images 
-    : ev.image 
-    ? [ev.image] 
-    : [];
-  
-  const [archiveImageIndex, setArchiveImageIndex] = React.useState(0);
-  
-  if (eventImages.length === 0) return null;
-  
-  return (
-    <div 
-      className={`relative w-full overflow-hidden transition-all duration-500 ${
-        isExpanded ? 'h-auto max-h-[600px]' : 'h-48'
-      }`}
-    >
-      <img 
-        src={eventImages[archiveImageIndex]} 
-        alt={`${ev.title} - zdjęcie ${archiveImageIndex + 1}`}
-        className={`w-full ${isExpanded ? 'h-auto' : 'h-full'} object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-700`}
-      />
-      
-      {/* Gradient tylko gdy zwinięte */}
-      {!isExpanded && (
-        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#FAF9F6] to-transparent pointer-events-none" />
-      )}
-      
-      {/* Nawigacja galerii - tylko gdy więcej niż 1 zdjęcie */}
-      {eventImages.length > 1 && (
-        <>
-          {/* Przyciski poprzedni/następny */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setArchiveImageIndex(prev => prev === 0 ? eventImages.length - 1 : prev - 1);
-            }}
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-2 rounded-full shadow-lg transition-all z-10 opacity-0 group-hover:opacity-100"
-            aria-label="Poprzednie zdjęcie"
-          >
-            <ChevronLeft size={16} className="text-[#2C1810]" />
-          </button>
-          
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setArchiveImageIndex(prev => prev === eventImages.length - 1 ? 0 : prev + 1);
-            }}
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-2 rounded-full shadow-lg transition-all z-10 opacity-0 group-hover:opacity-100"
-            aria-label="Następne zdjęcie"
-          >
-            <ChevronRight size={16} className="text-[#2C1810]" />
-          </button>
-          
-          {/* Wskaźniki (dots) */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 bg-black/50 px-2 py-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-            {eventImages.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setArchiveImageIndex(idx);
-                }}
-                className={`rounded-full transition-all ${
-                  idx === archiveImageIndex 
-                    ? 'bg-white w-4 h-1.5' 
-                    : 'bg-white/50 hover:bg-white/80 w-1.5 h-1.5'
-                }`}
-                aria-label={`Przejdź do zdjęcia ${idx + 1}`}
-              />
-            ))}
-          </div>
-          
-          {/* Licznik zdjęć */}
-          <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded-full text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity">
-            {archiveImageIndex + 1} / {eventImages.length}
-          </div>
-        </>
-      )}
-    </div>
-  );
-})()}
+                        {/* 🆕 GALERIA ZDJĘĆ W ARCHIWUM */}
+                        {eventImages.length > 0 && (
+                          <div 
+                            className={`relative w-full overflow-hidden transition-all duration-500 ${
+                              isExpanded ? 'h-auto max-h-[600px]' : 'h-48'
+                            }`}
+                          >
+                            <img 
+                              src={eventImages[currentArchiveIndex]} 
+                              alt={`${ev.title} - zdjęcie ${currentArchiveIndex + 1}`}
+                              className={`w-full ${isExpanded ? 'h-auto' : 'h-full'} object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-700`}
+                            />
+                            
+                            {!isExpanded && (
+                              <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#FAF9F6] to-transparent pointer-events-none" />
+                            )}
+                            
+                            {/* Nawigacja galerii - tylko gdy więcej niż 1 zdjęcie */}
+                            {eventImages.length > 1 && (
+                              <>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setArchiveImageIndexes(prev => ({
+                                      ...prev,
+                                      [ev.id]: currentArchiveIndex === 0 ? eventImages.length - 1 : currentArchiveIndex - 1
+                                    }));
+                                  }}
+                                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-2 rounded-full shadow-lg transition-all z-10 opacity-0 group-hover:opacity-100"
+                                  aria-label="Poprzednie zdjęcie"
+                                >
+                                  <ChevronLeft size={16} className="text-[#2C1810]" />
+                                </button>
+                                
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setArchiveImageIndexes(prev => ({
+                                      ...prev,
+                                      [ev.id]: currentArchiveIndex === eventImages.length - 1 ? 0 : currentArchiveIndex + 1
+                                    }));
+                                  }}
+                                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-2 rounded-full shadow-lg transition-all z-10 opacity-0 group-hover:opacity-100"
+                                  aria-label="Następne zdjęcie"
+                                >
+                                  <ChevronRight size={16} className="text-[#2C1810]" />
+                                </button>
+                                
+                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 bg-black/50 px-2 py-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                                  {eventImages.map((_, idx) => (
+                                    <button
+                                      key={idx}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setArchiveImageIndexes(prev => ({
+                                          ...prev,
+                                          [ev.id]: idx
+                                        }));
+                                      }}
+                                      className={`rounded-full transition-all ${
+                                        idx === currentArchiveIndex 
+                                          ? 'bg-white w-4 h-1.5' 
+                                          : 'bg-white/50 hover:bg-white/80 w-1.5 h-1.5'
+                                      }`}
+                                      aria-label={`Przejdź do zdjęcia ${idx + 1}`}
+                                    />
+                                  ))}
+                                </div>
+                                
+                                <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded-full text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                                  {currentArchiveIndex + 1} / {eventImages.length}
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        )}
                         
                         <div className="relative z-10 p-8">
                           <div className="flex justify-between items-start mb-6">
@@ -465,7 +453,6 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
                             {ev.title}
                           </h4>
                           
-                          {/* TEKST - pełny gdy rozwinięty */}
                           <p 
                             className={`text-[#2C1810]/40 text-sm font-light leading-relaxed italic group-hover:text-[#2C1810]/70 transition-all whitespace-pre-wrap ${
                               isExpanded ? '' : 'line-clamp-3'
@@ -474,7 +461,6 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
                             {ev.description}
                           </p>
                           
-                          {/* PRZYCISK ROZWIŃ/ZWIŃ */}
                           <button
                             onClick={toggleExpand}
                             className="mt-8 w-full flex items-center justify-center space-x-3 text-[#966F33] text-[9px] uppercase tracking-[0.3em] font-bold hover:text-[#8B4513] transition-colors"
