@@ -369,23 +369,89 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
                       >
                         <div className="absolute inset-0 bg-gradient-to-br from-[#966F33]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                         
-                        {/* ZDJĘCIE - pełne gdy rozwinięte */}
-                        {ev.image && (
-                          <div 
-                            className={`relative w-full overflow-hidden transition-all duration-500 ${
-                              isExpanded ? 'h-auto max-h-[600px]' : 'h-48'
-                            }`}
-                          >
-                            <img 
-                              src={ev.image} 
-                              alt={ev.title}
-                              className={`w-full ${isExpanded ? 'h-auto' : 'h-full'} object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-700`}
-                            />
-                            {!isExpanded && (
-                              <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#FAF9F6] to-transparent pointer-events-none" />
-                            )}
-                          </div>
-                        )}
+               {/* 🆕 GALERIA ZDJĘĆ W ARCHIWUM */}
+{(() => {
+  const eventImages = ev.images && ev.images.length > 0 
+    ? ev.images 
+    : ev.image 
+    ? [ev.image] 
+    : [];
+  
+  const [archiveImageIndex, setArchiveImageIndex] = React.useState(0);
+  
+  if (eventImages.length === 0) return null;
+  
+  return (
+    <div 
+      className={`relative w-full overflow-hidden transition-all duration-500 ${
+        isExpanded ? 'h-auto max-h-[600px]' : 'h-48'
+      }`}
+    >
+      <img 
+        src={eventImages[archiveImageIndex]} 
+        alt={`${ev.title} - zdjęcie ${archiveImageIndex + 1}`}
+        className={`w-full ${isExpanded ? 'h-auto' : 'h-full'} object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-700`}
+      />
+      
+      {/* Gradient tylko gdy zwinięte */}
+      {!isExpanded && (
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#FAF9F6] to-transparent pointer-events-none" />
+      )}
+      
+      {/* Nawigacja galerii - tylko gdy więcej niż 1 zdjęcie */}
+      {eventImages.length > 1 && (
+        <>
+          {/* Przyciski poprzedni/następny */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setArchiveImageIndex(prev => prev === 0 ? eventImages.length - 1 : prev - 1);
+            }}
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-2 rounded-full shadow-lg transition-all z-10 opacity-0 group-hover:opacity-100"
+            aria-label="Poprzednie zdjęcie"
+          >
+            <ChevronLeft size={16} className="text-[#2C1810]" />
+          </button>
+          
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setArchiveImageIndex(prev => prev === eventImages.length - 1 ? 0 : prev + 1);
+            }}
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-2 rounded-full shadow-lg transition-all z-10 opacity-0 group-hover:opacity-100"
+            aria-label="Następne zdjęcie"
+          >
+            <ChevronRight size={16} className="text-[#2C1810]" />
+          </button>
+          
+          {/* Wskaźniki (dots) */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 bg-black/50 px-2 py-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+            {eventImages.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setArchiveImageIndex(idx);
+                }}
+                className={`rounded-full transition-all ${
+                  idx === archiveImageIndex 
+                    ? 'bg-white w-4 h-1.5' 
+                    : 'bg-white/50 hover:bg-white/80 w-1.5 h-1.5'
+                }`}
+                aria-label={`Przejdź do zdjęcia ${idx + 1}`}
+              />
+            ))}
+          </div>
+          
+          {/* Licznik zdjęć */}
+          <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded-full text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+            {archiveImageIndex + 1} / {eventImages.length}
+          </div>
+        </>
+      )}
+    </div>
+  );
+})()}
                         
                         <div className="relative z-10 p-8">
                           <div className="flex justify-between items-start mb-6">
