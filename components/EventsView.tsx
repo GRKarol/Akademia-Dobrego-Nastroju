@@ -230,14 +230,15 @@ const EventsView: React.FC<EventsViewProps> = ({ onBack }) => {
                       
                       if (eventImages.length === 0) return null;
                       
-                      return (
-                        <div className="relative w-full aspect-square md:aspect-auto h-auto overflow-hidden rounded-sm border border-[#2C1810]/5 bg-white p-2">
-                          <div className="relative w-full h-full">
-                            <img 
-                              src={eventImages[currentImageIndex]} 
-                              className="w-full h-full object-cover block rounded-sm grayscale-[0.2] hover:grayscale-0 transition-all duration-700" 
-                              alt={`${currentEvent.title} - zdjęcie ${currentImageIndex + 1}`}
-                            />
+                    return (
+  <div className="relative w-full aspect-auto overflow-hidden rounded-sm border border-[#2C1810]/5 bg-white p-2">
+    <div className="relative w-full h-full">
+      <img 
+        src={eventImages[currentImageIndex]} 
+        className="w-full h-auto object-contain block rounded-sm grayscale-[0.2] hover:grayscale-0 transition-all duration-700" 
+        alt={`${currentEvent.title} - zdjęcie ${currentImageIndex + 1}`}
+      />
+
                             
                             {eventImages.length > 1 && (
                               <>
