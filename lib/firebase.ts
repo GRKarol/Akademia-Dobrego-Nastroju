@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-import { getAuth, signInAnonymously } from "firebase/auth";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyCw5Wdabyv6KRfGwv4CJ7SMPyvfg-y0dpY",
@@ -16,7 +16,23 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 
-// Automatyczne logowanie anonimowe przy starcie aplikacji
-signInAnonymously(auth).catch((error) => {
-  console.error("❌ Błąd logowania anonimowego:", error);
+// Promise który rozwiązuje się po zalogowaniu
+export const authReady = new Promise<void>((resolve) => {
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      console.log("✅ Użytkownik zalogowany:", user.uid);
+      resolve();
+    } else {
+      console.log("🔄 Logowanie anonimowe...");
+      signInAnonymously(auth)
+        .then(() => {
+          console.log("✅ Zalogowano anonimowo");
+          resolve();
+        })
+        .catch((error) => {
+          console.error("❌ Błąd logowania:", error);
+          resolve(); // Resolve anyway to not block app
+        });
+    }
+  });
 });
