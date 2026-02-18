@@ -7,7 +7,7 @@ import {
   Sparkles, Trash2, Key, Shield, ArrowLeft, Save, ArrowRight,
   Archive, ArchiveRestore
 } from 'lucide-react';
-import { db, authReady } from '../lib/firebase';  // ✅ Import authReady
+import { db, authReady } from '../lib/firebase';
 import { 
   collection, query, onSnapshot, orderBy, addDoc, updateDoc, 
   doc, deleteDoc, setDoc, getDoc, getDocs, limit, arrayUnion 
@@ -121,6 +121,8 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
   const [editEventDesc, setEditEventDesc] = useState('');
   const [editEventDate, setEditEventDate] = useState('');
   const [editEventImage, setEditEventImage] = useState<string | null>(null);
+  const [editEventImages, setEditEventImages] = useState<string[]>([]); // 🆕
+  const [editEventNewImages, setEditEventNewImages] = useState<string[]>([]); // 🆕
 
   const [showArchived, setShowArchived] = useState(false);
 
@@ -263,8 +265,42 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
     setSelectedImagesBase64(prev => prev.filter((_, i) => i !== index));
   };
 
+  // 🆕 NOWE FUNKCJE DLA EDYCJI
+  const removeEditEventImage = (index: number) => {
+    setEditEventImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleEditEventMultipleFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    setIsProcessingImage(true);
+    const compressedImages: string[] = [];
+    
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const reader = new FileReader();
+      
+      await new Promise<void>((resolve) => {
+        reader.onloadend = async () => {
+          const compressed = await compressImage(reader.result as string);
+          compressedImages.push(compressed);
+          resolve();
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+    
+    setEditEventNewImages(prev => [...prev, ...compressedImages]);
+    setIsProcessingImage(false);
+  };
+
+  const removeEditEventNewImage = (index: number) => {
+    setEditEventNewImages(prev => prev.filter((_, i) => i !== index));
+  };
+
   const sendMessage = async (type: 'text' | 'image' | 'poll' = 'text', extra?: any) => {
-    await authReady;  // ✅ Czekaj na zalogowanie
+    await authReady;
     
     if (!user) return;
     if (type === 'text' && !inputText.trim()) return;
@@ -286,7 +322,7 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
   };
 
   const handleEditMessage = async (id: string) => {
-    await authReady;  // ✅ Czekaj na zalogowanie
+    await authReady;
     
     const msgRef = doc(db, "messages", id);
     await updateDoc(msgRef, { text: editInput, isEdited: true });
@@ -294,7 +330,7 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
   };
 
   const performDeletion = async () => {
-    await authReady;  // ✅ Czekaj na zalogowanie
+    await authReady;
     
     if (!itemToDelete) return;
     const { id, type } = itemToDelete;
@@ -313,7 +349,7 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
   };
 
   const handleVote = async (msgId: string, optIdx: number) => {
-    await authReady;  // ✅ Czekaj na zalogowanie
+    await authReady;
     
     if (!user) return;
     const msg = messages.find(m => m.id === msgId);
@@ -335,7 +371,7 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
   };
 
   const createAdnEvent = async () => {
-    await authReady;  // ✅ Czekaj na zalogowanie
+    await authReady;
     
     if (!eventTitle || !eventDesc || isCreatingEvent) return;
     setIsCreatingEvent(true);
@@ -368,17 +404,21 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
   };
 
   const updateAdnEvent = async (eventId: string) => {
-    await authReady;  // ✅ Czekaj na zalogowanie
+    await authReady;
     
     if (!editEventTitle || !editEventDesc) return;
     
     try {
+      // 🆕 Połącz stare i nowe zdjęcia
+      const allImages = [...editEventImages, ...editEventNewImages];
+      
       const eventRef = doc(db, "adn_events", eventId);
       await updateDoc(eventRef, {
         title: editEventTitle,
         description: editEventDesc,
         date: editEventDate || "Wkrótce w Akademii",
-        image: editEventImage || null
+        image: allImages[0] || editEventImage || null,
+        images: allImages // 🆕 Zapisz całą tablicę
       });
       
       setEditingEventId(null);
@@ -386,6 +426,8 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
       setEditEventDesc('');
       setEditEventDate('');
       setEditEventImage(null);
+      setEditEventImages([]); // 🆕
+      setEditEventNewImages([]); // 🆕
     } catch (e) {
       console.error("Błąd aktualizacji:", e);
       alert("Nie udało się zaktualizować wydarzenia.");
@@ -393,7 +435,7 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
   };
 
   const toggleArchiveEvent = async (eventId: string, currentStatus: boolean) => {
-    await authReady;  // ✅ Czekaj na zalogowanie
+    await authReady;
     
     try {
       const eventRef = doc(db, "adn_events", eventId);
@@ -415,7 +457,7 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
   };
 
   const handleUpdateUserName = async (targetCode: string) => {
-    await authReady;  // ✅ Czekaj na zalogowanie
+    await authReady;
     
     if (!editUserFirstName.trim() || !editUserLastName.trim()) return;
     const userRef = doc(db, "adn_users", targetCode);
@@ -437,7 +479,7 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
           <h2 className="font-serif text-3xl text-[#966F33] italic">Przedstaw się.</h2>
           <form onSubmit={async (e) => {
             e.preventDefault();
-            await authReady;  // ✅ Czekaj na zalogowanie
+            await authReady;
             
             try {
               const snap = await getDocs(collection(db, "access_codes"));
@@ -632,7 +674,7 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
                      exit={{ opacity: 0, scale: 0.95 }} 
                      className="fixed inset-0 z-[150] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4"
                    >
-                     <div className="bg-white w-full max-w-2xl p-8 rounded-sm shadow-2xl space-y-6">
+                     <div className="bg-white w-full max-w-2xl p-8 rounded-sm shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
                        <div className="flex justify-between items-center border-b border-[#1A0F0A]/5 pb-4">
                          <h3 className="font-serif italic text-2xl text-[#1A0F0A]">Edytuj Wydarzenie</h3>
                          <button 
@@ -658,41 +700,100 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
                            className="w-full bg-[#FAF9F6] border border-[#1A0F0A]/10 p-4 text-sm outline-none focus:border-[#1A0F0A]/30 rounded-sm min-h-[150px] text-[#1A0F0A]" 
                          />
                          
-                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                           <div className="space-y-1">
-                             <label className="text-[10px] uppercase tracking-widest text-[#1A0F0A]/40 font-bold ml-1">Data</label>
-                             <input 
-                               value={editEventDate} 
-                               onChange={e => setEditEventDate(e.target.value)} 
-                               placeholder="np. 12 marca, 19:00" 
-                               className="w-full bg-[#FAF9F6] border border-[#1A0F0A]/10 p-3 text-sm rounded-sm outline-none text-[#1A0F0A]" 
-                             />
-                           </div>
+                         <div className="space-y-1">
+                           <label className="text-[10px] uppercase tracking-widest text-[#1A0F0A]/40 font-bold ml-1">Data</label>
+                           <input 
+                             value={editEventDate} 
+                             onChange={e => setEditEventDate(e.target.value)} 
+                             placeholder="np. 12 marca, 19:00" 
+                             className="w-full bg-[#FAF9F6] border border-[#1A0F0A]/10 p-3 text-sm rounded-sm outline-none text-[#1A0F0A]" 
+                           />
+                         </div>
+
+                         {/* 🆕 SEKCJA ZARZĄDZANIA ZDJĘCIAMI */}
+                         <div className="space-y-3">
+                           <label className="text-[10px] uppercase tracking-widest text-[#1A0F0A]/40 font-bold ml-1">
+                             Zarządzaj zdjęciami
+                           </label>
                            
-                           <div className="space-y-1">
-                             <label className="text-[10px] uppercase tracking-widest text-[#1A0F0A]/40 font-bold ml-1">Zdjęcie (opcjonalnie)</label>
-                             <label className="w-full h-[46px] border border-[#1A0F0A]/10 flex items-center justify-center cursor-pointer hover:bg-black/5 transition-all rounded-sm text-[10px] uppercase font-bold text-[#1A0F0A]">
-                               {editEventImage ? "Zmień zdjęcie ✓" : "Wybierz plik"}
-                               <input 
-                                 type="file" 
-                                 className="hidden" 
-                                 accept="image/*" 
-                                 onChange={async (e) => {
-                                   const file = e.target.files?.[0];
-                                   if (file) {
-                                     setIsProcessingImage(true);
-                                     const reader = new FileReader();
-                                     reader.onloadend = async () => {
-                                       const compressed = await compressImage(reader.result as string);
-                                       setEditEventImage(compressed);
-                                       setIsProcessingImage(false);
-                                     };
-                                     reader.readAsDataURL(file);
-                                   }
-                                 }} 
-                               />
-                             </label>
-                           </div>
+                           {editEventImages.length > 0 && (
+                             <div>
+                               <p className="text-xs text-[#1A0F0A]/60 mb-2">Obecne zdjęcia:</p>
+                               <div className="grid grid-cols-3 gap-2">
+                                 {editEventImages.map((img, idx) => (
+                                   <div key={`old-${idx}`} className="relative group">
+                                     <img 
+                                       src={img} 
+                                       alt={`Zdjęcie ${idx + 1}`}
+                                       className="w-full h-24 object-cover rounded-sm border border-[#1A0F0A]/10"
+                                     />
+                                     <button
+                                       type="button"
+                                       onClick={() => removeEditEventImage(idx)}
+                                       className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                     >
+                                       <X size={12} />
+                                     </button>
+                                     {idx === 0 && (
+                                       <div className="absolute bottom-1 left-1 bg-[#966F33] text-white text-[8px] px-2 py-1 rounded-sm font-bold">
+                                         GŁÓWNE
+                                       </div>
+                                     )}
+                                   </div>
+                                 ))}
+                               </div>
+                             </div>
+                           )}
+                           
+                           {editEventNewImages.length > 0 && (
+                             <div>
+                               <p className="text-xs text-[#1A0F0A]/60 mb-2">Nowe zdjęcia (do zapisania):</p>
+                               <div className="grid grid-cols-3 gap-2">
+                                 {editEventNewImages.map((img, idx) => (
+                                   <div key={`new-${idx}`} className="relative group">
+                                     <img 
+                                       src={img} 
+                                       alt={`Nowe zdjęcie ${idx + 1}`}
+                                       className="w-full h-24 object-cover rounded-sm border-2 border-green-500"
+                                     />
+                                     <button
+                                       type="button"
+                                       onClick={() => removeEditEventNewImage(idx)}
+                                       className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                     >
+                                       <X size={12} />
+                                     </button>
+                                     <div className="absolute bottom-1 left-1 bg-green-600 text-white text-[8px] px-2 py-1 rounded-sm font-bold">
+                                       NOWE
+                                     </div>
+                                   </div>
+                                 ))}
+                               </div>
+                             </div>
+                           )}
+                           
+                           <label className="w-full h-[46px] border-2 border-dashed border-[#1A0F0A]/20 flex items-center justify-center cursor-pointer hover:bg-[#1A0F0A]/5 transition-all rounded-sm text-[10px] uppercase font-bold text-[#1A0F0A]">
+                             {isProcessingImage ? (
+                               <span className="flex items-center gap-2">
+                                 <Loader2 size={16} className="animate-spin" /> Przetwarzanie...
+                               </span>
+                             ) : (
+                               <span className="flex items-center gap-2">
+                                 <Plus size={16} /> Dodaj nowe zdjęcia
+                               </span>
+                             )}
+                             <input 
+                               type="file" 
+                               className="hidden" 
+                               accept="image/*" 
+                               multiple 
+                               onChange={handleEditEventMultipleFiles} 
+                             />
+                           </label>
+                           
+                           <p className="text-[9px] text-[#1A0F0A]/40 italic">
+                             Pierwsze zdjęcie będzie głównym. Możesz dodać lub usunąć zdjęcia.
+                           </p>
                          </div>
                        </div>
                        
@@ -742,7 +843,7 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
                             <div className="flex items-center gap-2 shrink-0">
                               <button 
                                 onClick={async ()=>{ 
-                                  await authReady;  // ✅ Czekaj na zalogowanie
+                                  await authReady;
                                   if(i > 0) { 
                                     const prev = displayedEvents[i-1]; 
                                     await updateDoc(doc(db, "adn_events", ev.id), { order: prev.order }); 
@@ -757,7 +858,7 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
                               
                               <button 
                                 onClick={async ()=>{ 
-                                  await authReady;  // ✅ Czekaj na zalogowanie
+                                  await authReady;
                                   if(i < displayedEvents.length - 1) { 
                                     const next = displayedEvents[i+1]; 
                                     await updateDoc(doc(db, "adn_events", ev.id), { order: next.order }); 
@@ -785,6 +886,8 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
                                   setEditEventDesc(ev.description);
                                   setEditEventDate(ev.date);
                                   setEditEventImage(ev.image || null);
+                                  setEditEventImages(ev.images || []); // 🆕
+                                  setEditEventNewImages([]); // 🆕
                                 }} 
                                 className="p-2 text-[#1A0F0A]/20 hover:text-blue-600 hover:bg-blue-50 rounded-sm transition-all"
                                 title="Edytuj wydarzenie"
@@ -815,7 +918,7 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
                           <option value="admin">Admin</option>
                         </select>
                         <button onClick={async ()=>{ 
-                          await authReady;  // ✅ Czekaj na zalogowanie
+                          await authReady;
                           if(!newCodeInput) return; 
                           await addDoc(collection(db, "access_codes"), { value: newCodeInput.toLowerCase().trim(), role: newCodeRole }); 
                           setNewCodeInput(''); 
@@ -830,7 +933,7 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
                               <span className="text-[10px] uppercase text-[#1A0F0A]/40 shrink-0 font-bold">({c.role})</span>
                             </div>
                             <button onClick={async ()=>{ 
-                              await authReady;  // ✅ Czekaj na zalogowanie
+                              await authReady;
                               if(c.id) await deleteDoc(doc(db, "access_codes", c.id)); 
                             }} className="text-[#1A0F0A]/20 hover:text-red-500 p-1 transition-colors"><Trash2 size={16}/></button>
                           </div>
@@ -862,7 +965,7 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
                                   <div className="flex items-center gap-2 shrink-0">
                                     <button onClick={()=>{ setEditingUserId(u.code); setEditUserFirstName(u.firstName); setEditUserLastName(u.lastName); }} className="text-[#1A0F0A]/20 hover:text-[#1A0F0A] p-1 transition-colors"><Edit2 size={16}/></button>
                                     <button onClick={async ()=>{ 
-                                      await authReady;  // ✅ Czekaj na zalogowanie
+                                      await authReady;
                                       await deleteDoc(doc(db, "adn_users", u.code)); 
                                     }} className="text-[#1A0F0A]/20 hover:text-red-500 p-1 transition-colors"><X size={16}/></button>
                                   </div>
@@ -933,7 +1036,7 @@ const ClubRoom: React.FC<ClubRoomProps> = ({ code, onExit }) => {
                         <div className={`mt-4 pt-3 border-t border-[#1A0F0A]/5 flex flex-wrap items-center gap-6 transition-opacity ${user.isAdmin ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
                           {user.isAdmin && (
                             <button onClick={async ()=>{ 
-                              await authReady;  // ✅ Czekaj na zalogowanie
+                              await authReady;
                               await updateDoc(doc(db, "messages", m.id), { isAnnouncement: !m.isAnnouncement }); 
                             }} className={`flex items-center gap-1.5 text-[8px] uppercase tracking-widest font-bold ${m.isAnnouncement ? 'text-[#1A0F0A]' : 'text-[#1A0F0A]/20 hover:text-[#1A0F0A]'} transition-all`}>
                               <Megaphone size={12} className="text-[#1A0F0A]" /> <span>{m.isAnnouncement ? 'Odepnij' : 'Przypnij'}</span>
