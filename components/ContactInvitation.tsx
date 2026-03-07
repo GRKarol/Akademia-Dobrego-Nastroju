@@ -129,7 +129,7 @@ useEffect(() => {
             <span className="italic text-[#8B4513]">to samo co my...</span>
           </h2>
           
-          <h3 className="text-[#8B4513] uppercase tracking-[0.3em] text-sm md:text-base font-bold mb-10">
+          <h3 className="text-[#8B4513] uppercase tracking-[0.3em] text-sm md:text-base font-bold mb-10 italic">
             Jeśli masz pasję, którą chcesz dzielić
           </h3>
 
