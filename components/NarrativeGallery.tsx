@@ -71,10 +71,10 @@ const items = [
   },
   {
     type: 'image',
-    title: "Kameralna sala – intymność dźwięku",
+    title: "Pokoje gościnne – zostań na dłużej",
     img: "kameralna.jpg",
-    bg: '#FDFBF7', 
-    desc: "Dla tych momentów, kiedy muzyka, rozmowa czy poezja potrzebują bliskości. Tu fortepian brzmi inaczej, słowa znaczą więcej, a cisza między nutami jest równie ważna jak one same."
+    bg: '#FDFBF7',
+    desc: "Czasem jedna wizyta nie wystarczy. Dla tych, którzy przyjeżdżają z daleka albo po prostu chcą zanurzyć się głębiej – mamy pokoje gościnne. Połóż się wieczorem, prześpij się w ciszy, a rano zejdź na kawę i zacznij dzień od nowa."
   },
   {
     type: 'image',
